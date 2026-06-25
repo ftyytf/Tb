@@ -128,12 +128,24 @@
   // ============================================================
   // ГЕНЕРАЦИЯ PDF С ПОДДЕРЖКОЙ КИРИЛЛИЦЫ (pdf-lib)
   // ============================================================
+  // Поля документа по ГОСТ Р 7.0.97-2016: левое/верхнее/нижнее – не менее 20 мм, правое – не менее 10 мм.
+  // ============================================================
   const PAGE_SIZE = [595.28, 841.89]; // A4 в пунктах
-  const MARGIN = 50;
+  const MM = 2.8346; // 1 мм в пунктах
+  const MARGIN_LEFT = 20 * MM;
+  const MARGIN_RIGHT = 10 * MM;
+  const MARGIN_TOP = 20 * MM;
+  const MARGIN_BOTTOM = 20 * MM;
+  const PARAGRAPH_INDENT = 12.5 * MM; // абзацный отступ 1,25 см
 
   function newPage(pdfDoc) {
     const page = pdfDoc.addPage(PAGE_SIZE);
-    return { page, y: page.getSize().height - MARGIN, width: page.getSize().width };
+    const { width } = page.getSize();
+    return {
+      page,
+      y: page.getSize().height - MARGIN_TOP,
+      contentWidth: width - MARGIN_LEFT - MARGIN_RIGHT
+    };
   }
 
   function wrapText(text, font, fontSize, maxWidth) {
@@ -153,73 +165,113 @@
     return lines;
   }
 
+  async function loadFont(pdfDoc, url) {
+    const bytes = await fetch(url).then(res => res.arrayBuffer());
+    return pdfDoc.embedFont(bytes);
+  }
+
   async function generatePDF(carNumber, signedAtFormatted) {
     try {
-      const fontUrl = 'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf';
-      const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-
       const { PDFDocument, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.create();
       pdfDoc.registerFontkit(fontkit);
-      const font = await pdfDoc.embedFont(fontBytes);
 
-      let { page, y, width } = newPage(pdfDoc);
+      const baseUrl = 'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/';
+      const font = await loadFont(pdfDoc, baseUrl + 'DejaVuSans.ttf');
+      const fontBold = await loadFont(pdfDoc, baseUrl + 'DejaVuSans-Bold.ttf');
 
-      page.drawText('СТЕПЬ', { x: MARGIN, y, size: 24, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 34;
-      page.drawText('Агрохолдинг «СТЕПЬ»', { x: MARGIN, y, size: 14, font, color: rgb(0.353, 0.478, 0.416) });
-      y -= 26;
+      const textColor = rgb(0.1, 0.1, 0.1);
+      const mutedColor = rgb(0.4, 0.4, 0.4);
 
-      page.drawText('Соглашение по охране труда', { x: MARGIN, y, size: 18, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 22;
+      let { page, y, contentWidth } = newPage(pdfDoc);
 
-      page.drawLine({
-        start: { x: MARGIN, y: y + 6 },
-        end: { x: width - MARGIN, y: y + 6 },
-        thickness: 1,
-        color: rgb(0.831, 0.627, 0.09)
-      });
-      y -= 20;
-
-      page.drawText(`Номер ТС: ${carNumber}`, { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 20;
-      page.drawText(`Время подписания: ${signedAtFormatted}`, { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 28;
-
-      page.drawText('Требования промышленной безопасности:', { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 20;
-
-      const fontSize = 11;
-      const lineHeight = 16;
-      for (const rule of RULES) {
-        const maxWidth = width - MARGIN * 2;
-        const lines = wrapText('• ' + rule, font, fontSize, maxWidth);
-        for (const line of lines) {
-          if (y < MARGIN) {
-            ({ page, y, width } = newPage(pdfDoc));
-          }
-          page.drawText(line, { x: MARGIN, y, size: fontSize, font, color: rgb(0.118, 0.18, 0.157) });
-          y -= lineHeight;
+      function ensureSpace(needed) {
+        if (y - needed < MARGIN_BOTTOM) {
+          ({ page, y, contentWidth } = newPage(pdfDoc));
         }
       }
 
-      if (y < MARGIN + 70) {
-        ({ page, y, width } = newPage(pdfDoc));
+      function drawCentered(text, size, useFont, color) {
+        const textWidth = useFont.widthOfTextAtSize(text, size);
+        const x = MARGIN_LEFT + (contentWidth - textWidth) / 2;
+        page.drawText(text, { x, y, size, font: useFont, color });
       }
 
-      y -= 10;
-      const ackLines = wrapText(
-        'Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.',
-        font, 13, width - MARGIN * 2
-      );
-      for (const line of ackLines) {
-        page.drawText(line, { x: MARGIN, y, size: 13, font, color: rgb(0.106, 0.263, 0.196) });
-        y -= 18;
+      function drawParagraph(text, { size = 12, useFont = font, color = textColor, lineHeight = size * 1.4, indent = 0 } = {}) {
+        const lines = wrapText(text, useFont, size, contentWidth - indent);
+        lines.forEach((line, idx) => {
+          ensureSpace(lineHeight);
+          page.drawText(line, { x: MARGIN_LEFT + (idx === 0 ? indent : 0), y, size, font: useFont, color });
+          y -= lineHeight;
+        });
       }
+
+      // ---------- Шапка организации ----------
+      drawCentered('АГРОХОЛДИНГ «СТЕПЬ»', 14, fontBold, textColor);
+      y -= 20;
+
+      // ---------- Заголовок документа ----------
+      drawCentered('СОГЛАШЕНИЕ', 16, fontBold, textColor);
+      y -= 20;
+      drawCentered('по охране труда и промышленной безопасности', 13, font, textColor);
+      y -= 28;
+
+      // ---------- Реквизиты документа ----------
+      const docDate = signedAtFormatted.split(',')[0] || signedAtFormatted;
+      drawParagraph(`Дата составления: ${docDate}`, { size: 11, color: mutedColor, lineHeight: 16 });
+      drawParagraph(`Государственный регистрационный номер транспортного средства: ${carNumber}`, { size: 11, color: mutedColor, lineHeight: 16 });
+      y -= 12;
+
+      page.drawLine({
+        start: { x: MARGIN_LEFT, y: y + 6 },
+        end: { x: MARGIN_LEFT + contentWidth, y: y + 6 },
+        thickness: 0.75,
+        color: rgb(0.7, 0.7, 0.7)
+      });
+      y -= 18;
+
+      // ---------- Преамбула ----------
+      drawParagraph(
+        'Настоящим подтверждается, что водитель указанного транспортного средства ознакомлен ' +
+        'с требованиями промышленной и пожарной безопасности, действующими на территории ' +
+        'Агрохолдинга «СТЕПЬ», и обязуется их соблюдать в полном объёме.',
+        { size: 12, lineHeight: 17, indent: PARAGRAPH_INDENT }
+      );
+      y -= 8;
+
+      // ---------- Раздел с требованиями ----------
+      drawParagraph('1. Требования промышленной безопасности', { size: 13, useFont: fontBold, lineHeight: 20 });
       y -= 4;
-      page.drawText(`Дата и время подписания: ${signedAtFormatted}`, { x: MARGIN, y, size: 10, font, color: rgb(0.353, 0.478, 0.416) });
-      y -= 16;
-      page.drawText('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', { x: MARGIN, y, size: 10, font, color: rgb(0.353, 0.478, 0.416) });
+
+      RULES.forEach((rule, index) => {
+        drawParagraph(`1.${index + 1}. ${rule}`, { size: 11.5, lineHeight: 16, indent: PARAGRAPH_INDENT });
+      });
+      y -= 10;
+
+      // ---------- Подтверждение и подпись ----------
+      ensureSpace(90);
+      drawParagraph('2. Подтверждение согласия', { size: 13, useFont: fontBold, lineHeight: 20 });
+      y -= 4;
+      drawParagraph(
+        'Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.',
+        { size: 12, lineHeight: 17, indent: PARAGRAPH_INDENT }
+      );
+      y -= 14;
+
+      ensureSpace(60);
+      const signX = MARGIN_LEFT + contentWidth - 200;
+      page.drawText('Подпись подтверждена электронно', { x: MARGIN_LEFT, y, size: 10.5, font, color: textColor });
+      page.drawText(signedAtFormatted, { x: signX, y, size: 10.5, font, color: textColor });
+      y -= 14;
+      page.drawLine({ start: { x: MARGIN_LEFT, y: y + 10 }, end: { x: MARGIN_LEFT + 150, y: y + 10 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+      page.drawLine({ start: { x: signX, y: y + 10 }, end: { x: signX + 150, y: y + 10 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+      page.drawText('способ подтверждения', { x: MARGIN_LEFT, y, size: 8, font, color: mutedColor });
+      page.drawText('дата, время', { x: signX, y, size: 8, font, color: mutedColor });
+
+      // ---------- Подвал ----------
+      ensureSpace(30);
+      y -= 20;
+      drawParagraph('Документ сформирован автоматически в электронной системе Агрохолдинга «СТЕПЬ».', { size: 9, color: mutedColor, lineHeight: 12 });
 
       const pdfBytes = await pdfDoc.save();
       return new Blob([pdfBytes], { type: 'application/pdf' });
