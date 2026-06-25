@@ -71,8 +71,33 @@ body {
   max-height: 280px;
   overflow-y: auto;
 }
+.agreement-box .doc-org {
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #1b4332;
+  margin-bottom: 8px;
+}
+.agreement-box .doc-title {
+  text-align: center;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 1px;
+  color: #1b4332;
+  margin-bottom: 2px;
+}
+.agreement-box .doc-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #5a7a6a;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8e0;
+}
 .agreement-box h3 {
   font-size: 15px;
+  margin-top: 10px;
   margin-bottom: 6px;
   color: #1b4332;
   display: flex;
@@ -80,8 +105,8 @@ body {
   gap: 6px;
 }
 .agreement-box h3::before { content: "🛡️"; font-size: 18px; }
-.agreement-box ul { padding-left: 20px; margin: 4px 0; }
-.agreement-box ul li { margin-bottom: 2px; }
+.agreement-box ol { padding-left: 22px; margin: 4px 0; }
+.agreement-box ol li { margin-bottom: 2px; }
 .agreement-box .highlight {
   background: #eaf5ed;
   padding: 8px 12px;
