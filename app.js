@@ -327,10 +327,13 @@
   // ОТПРАВКА В TELEGRAM
   // ============================================================
   function sendPDFToTelegram(pdfBlob, carNumber, signedAt) {
+    const dateForName = new Date().toISOString().slice(0, 10);
     const formData = new FormData();
     formData.append('chat_id', TELEGRAM_CHAT_ID);
-    formData.append('document', pdfBlob, `Соглашение_ТБ_${carNumber}_${new Date().toISOString().slice(0,10)}.pdf`);
-    formData.append('caption', `✅ Новое подписание ТБ\n🚛 Номер ТС: ${carNumber}\n🕒 Время: ${signedAt}`);
+    // Номер ТС и дата — в имени файла и подписи, чтобы находить через поиск Telegram
+    // (по тексту) и через «Перейти к дате» в поиске чата (по календарю).
+    formData.append('document', pdfBlob, `ТБ_${carNumber}_${dateForName}.pdf`);
+    formData.append('caption', `✅ Подписание ТБ\nНомер ТС: ${carNumber}\nДата: ${dateForName}\nВремя: ${signedAt}`);
 
     fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
       method: 'POST',
