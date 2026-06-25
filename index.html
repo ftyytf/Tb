@@ -200,15 +200,17 @@
     .footer span { display: inline-block; margin: 0 4px; }
     .footer .brand { font-weight: 600; color: #1b4332; }
 
-    /* Блок для PDF — скрыт от глаз, но доступен для рендеринга */
+    /* PDF-блок: видимый, но прозрачный и не перехватывает события */
     #pdf-content {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
+      position: fixed;
+      left: 0;
+      top: 0;
       width: 700px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
       background: white;
       padding: 20px;
-      z-index: -1;
     }
     .pdf-page {
       width: 700px;
@@ -323,7 +325,7 @@
   </div>
 </div>
 
-<!-- Блок для PDF – скрыт за пределами экрана -->
+<!-- Блок для PDF – видимый, но прозрачный и не взаимодействует -->
 <div id="pdf-content">
   <div class="pdf-page" id="pdfPage">
     <div class="pdf-logo">СТЕПЬ</div>
@@ -369,7 +371,7 @@
     'use strict';
 
     // ============================================================
-    // НАСТРОЙКИ TELEGRAM (ваши данные)
+    // НАСТРОЙКИ TELEGRAM
     // ============================================================
     const TELEGRAM_TOKEN = '8191421329:AAEr6WoUhCksXlwmC8BdgNJCL5T7voH0LCI';
     const TELEGRAM_CHAT_ID = '1191756937';
@@ -476,45 +478,35 @@
     });
 
     // ============================================================
-    // ГЕНЕРАЦИЯ PDF И ОТПРАВКА В TELEGRAM (исправленная)
+    // ГЕНЕРАЦИЯ PDF И ОТПРАВКА В TELEGRAM
     // ============================================================
     function generatePDFAndSend(carNumber, signedAtFormatted) {
-      // Заполняем данные в скрытом блоке
+      // Заполняем данные
       document.getElementById('pdfCar').textContent = carNumber;
       document.getElementById('pdfTime').textContent = signedAtFormatted;
       document.getElementById('pdfTimeStamp').textContent = signedAtFormatted;
 
-      // Получаем элемент, который нужно сфотографировать
       const pdfPage = document.getElementById('pdfPage');
 
-      // Временно показываем блок (он всё равно вне экрана, но становиться доступным для рендеринга)
-      const pdfContent = document.getElementById('pdf-content');
-      pdfContent.style.display = 'block'; // или оставляем как есть, т.к. он уже position absolute
-
-      // Инициализируем jsPDF
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
-
-      // Рендерим HTML в изображение с помощью html2canvas
+      // Используем html2canvas с дополнительными настройками для корректного рендеринга
       html2canvas(pdfPage, {
-        scale: 2,                // качество
+        scale: 2,
         useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
         logging: false,
-        width: 700,              // явно указываем ширину
+        width: 700,
         height: pdfPage.scrollHeight,
-        onclone: function(doc) {
-          // можно добавить, если нужно
+        onclone: function(clonedDoc) {
+          // Убедимся, что в клоне все стили применены
         }
       }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'pt', 'a4');
         const imgWidth = pdf.internal.pageSize.getWidth();
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-        // Скачиваем PDF
+        // Скачиваем
         const pdfBlob = pdf.output('blob');
         const link = document.createElement('a');
         link.href = URL.createObjectURL(pdfBlob);
@@ -526,14 +518,9 @@
         if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
           sendPDFToTelegram(pdfBlob, carNumber, signedAtFormatted);
         }
-
-        // Скрываем блок обратно (если нужно)
-        pdfContent.style.display = 'none';
       }).catch(err => {
         console.error('Ошибка генерации PDF:', err);
         showStatus('❌ Не удалось сгенерировать PDF. Попробуйте ещё раз.', 'error');
-        // Скрываем блок при ошибке
-        pdfContent.style.display = 'none';
       });
     }
 
@@ -608,10 +595,9 @@
 
       showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
 
-      // Генерируем PDF и отправляем в Telegram (с небольшой задержкой)
       setTimeout(() => {
         generatePDFAndSend(car, timeStr);
-      }, 400);
+      }, 500);
     }
 
     // ============================================================
