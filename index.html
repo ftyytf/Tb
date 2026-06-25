@@ -49,6 +49,11 @@
     <div class="highlight">Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.</div>
   </div>
 
+  <label class="checkbox-field" for="ackCheckbox">
+    <input type="checkbox" id="ackCheckbox" />
+    <span>Я прочитал(а) и согласен(на) с условиями соглашения</span>
+  </label>
+
   <div class="field">
     <label for="carInput">Государственный номер ТС</label>
     <input type="text" id="carInput" placeholder="А777АА77" autocomplete="off" maxlength="9" />
@@ -59,9 +64,16 @@
     <div class="error-text" id="errorText">Некорректный формат или код региона.</div>
   </div>
 
-  <button class="btn" id="confirmBtn">✅ Подтвердить согласие</button>
+  <button class="btn" id="confirmBtn" disabled>✅ Подтвердить согласие</button>
 
   <div id="statusMessage" class="status"></div>
+
+  <div class="history">
+    <button class="history-toggle" id="historyToggle" type="button">
+      📋 История подписаний <span id="historyCount">(0)</span> <span class="chev">▾</span>
+    </button>
+    <div class="history-list" id="historyList" hidden></div>
+  </div>
 
   <div class="footer">
     <span>⏱️ Время фиксируется автоматически</span>

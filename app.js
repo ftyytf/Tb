@@ -91,6 +91,10 @@
   const confirmBtn = document.getElementById('confirmBtn');
   const statusEl = document.getElementById('statusMessage');
   const errorText = document.getElementById('errorText');
+  const ackCheckbox = document.getElementById('ackCheckbox');
+  const historyToggle = document.getElementById('historyToggle');
+  const historyList = document.getElementById('historyList');
+  const historyCount = document.getElementById('historyCount');
 
   function showStatus(text, type) {
     statusEl.textContent = text;
@@ -106,6 +110,43 @@
     errorText.classList.add('visible');
     carInput.classList.add('invalid');
   }
+
+  // ============================================================
+  // ЧЕКБОКС СОГЛАСИЯ — БЛОКИРУЕТ КНОПКУ
+  // ============================================================
+  ackCheckbox.addEventListener('change', function() {
+    confirmBtn.disabled = !this.checked;
+  });
+
+  // ============================================================
+  // ИСТОРИЯ ПОДПИСАНИЙ
+  // ============================================================
+  function getHistory() {
+    return JSON.parse(localStorage.getItem('tb_signatures') || '[]');
+  }
+
+  function renderHistory() {
+    const history = getHistory().slice().reverse();
+    historyCount.textContent = `(${history.length})`;
+
+    if (history.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">Подписаний пока нет</div>';
+      return;
+    }
+
+    historyList.innerHTML = history.map(record => {
+      const date = new Date(record.signedAt);
+      const timeStr = date.toLocaleString('ru-RU', { hour12: false });
+      return `<div class="history-item"><span class="car">${record.carNumber}</span><span class="time">${timeStr}</span></div>`;
+    }).join('');
+  }
+
+  historyToggle.addEventListener('click', function() {
+    const isHidden = historyList.hidden;
+    historyList.hidden = !isHidden;
+    this.classList.toggle('open', isHidden);
+    if (isHidden) renderHistory();
+  });
 
   // ============================================================
   // ФИЛЬТРАЦИЯ ВВОДА
@@ -315,6 +356,11 @@
     hideStatus();
     hideError();
 
+    if (!ackCheckbox.checked) {
+      showStatus('⚠️ Отметьте, что согласны с условиями соглашения', 'error');
+      return;
+    }
+
     const car = carInput.value.trim().toUpperCase();
     if (car === '') {
       showStatus('⚠️ Введите государственный номер', 'error');
@@ -339,31 +385,42 @@
       return;
     }
 
-    const now = new Date();
-    const timeStr = now.toLocaleString('ru-RU', { hour12: false });
-    const record = {
-      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
-      carNumber: car,
-      signedAt: now.toISOString(),
-      version: '1.0'
-    };
-    const history = JSON.parse(localStorage.getItem('tb_signatures') || '[]');
-    history.push(record);
-    localStorage.setItem('tb_signatures', JSON.stringify(history));
+    const originalLabel = confirmBtn.textContent;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '⏳ Отправка...';
 
-    showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
+    try {
+      const now = new Date();
+      const timeStr = now.toLocaleString('ru-RU', { hour12: false });
+      const record = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        carNumber: car,
+        signedAt: now.toISOString(),
+        version: '1.0'
+      };
+      const history = getHistory();
+      history.push(record);
+      localStorage.setItem('tb_signatures', JSON.stringify(history));
+      if (!historyList.hidden) renderHistory();
+      historyCount.textContent = `(${history.length})`;
 
-    const pdfBlob = await generatePDF(car, timeStr);
-    if (!pdfBlob) return;
+      showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
 
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(pdfBlob);
-    link.download = `Соглашение_ТБ_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
-    link.click();
-    URL.revokeObjectURL(link.href);
+      const pdfBlob = await generatePDF(car, timeStr);
+      if (!pdfBlob) return;
 
-    if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-      sendPDFToTelegram(pdfBlob, car, timeStr);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `Соглашение_ТБ_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+        sendPDFToTelegram(pdfBlob, car, timeStr);
+      }
+    } finally {
+      confirmBtn.disabled = !ackCheckbox.checked;
+      confirmBtn.textContent = originalLabel;
     }
   }
 
@@ -399,6 +456,7 @@
   // ЗАПУСК
   // ============================================================
   autoFillFromUrl();
+  historyCount.textContent = `(${getHistory().length})`;
   if (!carInput.value) carInput.focus();
 
   console.log('Форма подписания ТБ (СТЕПЬ) с PDF (pdf-lib) и Telegram загружена.');
