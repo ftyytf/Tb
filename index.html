@@ -200,7 +200,17 @@
     .footer span { display: inline-block; margin: 0 4px; }
     .footer .brand { font-weight: 600; color: #1b4332; }
 
-    #pdf-content { display: none; }
+    /* Скрытый блок для PDF — делаем его вне потока и скрываем визуально, но доступным для рендеринга */
+    #pdf-content {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 700px;
+      background: #ffffff;
+      z-index: -1;
+      opacity: 0;
+      pointer-events: none;
+    }
     .pdf-page {
       width: 700px;
       padding: 40px;
@@ -313,8 +323,8 @@
   </div>
 </div>
 
-<!-- Скрытый блок для PDF -->
-<div id="pdf-content" style="display: none;">
+<!-- Скрытый блок для PDF, теперь не display:none, а позиционирован за экраном -->
+<div id="pdf-content">
   <div class="pdf-page" id="pdfPage">
     <div class="pdf-logo">СТЕПЬ</div>
     <div style="font-size:14px; color:#5a7a6a; margin-bottom:6px;">Агрохолдинг «СТЕПЬ»</div>
@@ -469,14 +479,15 @@
     // ГЕНЕРАЦИЯ PDF И ОТПРАВКА В TELEGRAM
     // ============================================================
     function generatePDFAndSend(carNumber, signedAtFormatted) {
+      // Заполняем данные
       document.getElementById('pdfCar').textContent = carNumber;
       document.getElementById('pdfTime').textContent = signedAtFormatted;
       document.getElementById('pdfTimeStamp').textContent = signedAtFormatted;
 
       const pdfPage = document.getElementById('pdfPage');
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
 
+      // Используем html2canvas
       html2canvas(pdfPage, {
         scale: 2,
         useCORS: true,
@@ -487,11 +498,12 @@
         height: pdfPage.scrollHeight
       }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'pt', 'a4');
         const imgWidth = pdf.internal.pageSize.getWidth();
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-        // Скачиваем PDF
+        // Скачиваем
         const pdfBlob = pdf.output('blob');
         const link = document.createElement('a');
         link.href = URL.createObjectURL(pdfBlob);
