@@ -136,6 +136,23 @@
     return { page, y: page.getSize().height - MARGIN, width: page.getSize().width };
   }
 
+  function wrapText(text, font, fontSize, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? current + ' ' + word : word;
+      if (font.widthOfTextAtSize(candidate, fontSize) > maxWidth && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) lines.push(current);
+    return lines;
+  }
+
   async function generatePDF(carNumber, signedAtFormatted) {
     try {
       const fontUrl = 'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf';
@@ -176,7 +193,7 @@
       const lineHeight = 14;
       for (const rule of RULES) {
         const maxWidth = width - MARGIN * 2;
-        const lines = font.splitText('• ' + rule, maxWidth, fontSize, undefined, false);
+        const lines = wrapText('• ' + rule, font, fontSize, maxWidth);
         for (const line of lines) {
           if (y < MARGIN) {
             ({ page, y, width } = newPage(pdfDoc));
