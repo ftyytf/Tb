@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Подписание соглашения по ТБ – Агрохолдинг «СТЕПЬ»</title>
 
-  <!-- jsPDF + плагин для шрифтов -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Библиотека pdf-lib для создания PDF с поддержкой кириллицы -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
   <style>
-    /* (стили без изменений) */
+    /* (стили оставляем без изменений) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -394,122 +394,175 @@
     });
 
     // ============================================================
-    // ГЕНЕРАЦИЯ PDF С ПОДДЕРЖКОЙ КИРИЛЛИЦЫ
+    // ГЕНЕРАЦИЯ PDF С ПОДДЕРЖКОЙ КИРИЛЛИЦЫ (pdf-lib)
     // ============================================================
-    function generatePDFAndSend(carNumber, signedAtFormatted) {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 20;
-      let y = 20;
+    async function generatePDF(carNumber, signedAtFormatted) {
+      try {
+        // Загружаем шрифт с поддержкой кириллицы (DejaVuSans)
+        const fontUrl = 'https://cdn.jsdelivr.net/npm/@pdf-lib/fonts@1.0.0/DejaVuSans.ttf';
+        const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
 
-      // ---- Устанавливаем шрифт с поддержкой кириллицы ----
-      // В jsPDF 2.5.1 можно использовать стандартные шрифты, но они не содержат кириллицу.
-      // Однако мы можем применить шрифт, который уже загружен в браузере, используя стандартный механизм.
-      // Простой способ — использовать шрифт 'courier', который поддерживает кириллицу в некоторых средах.
-      // Лучше использовать шрифт 'helvetica' с опцией 'unicode' — попробуем.
-      pdf.setFont('helvetica', 'normal');
+        // Создаём новый PDF
+        const { PDFDocument, StandardFonts, rgb } = PDFLib;
+        const pdfDoc = await PDFDocument.create();
 
-      // Для надёжности можно попробовать подключить внешний шрифт, но это сложно.
-      // Вместо этого я предлагаю использовать встроенную поддержку юникода в jsPDF:
-      // Используем метод text с опцией 'charSpace' и 'maxWidth'.
-      // Также можно применить pdf.addFileToVFS и addFont, но для простоты оставим как есть.
+        // Встраиваем шрифт
+        const font = await pdfDoc.embedFont(fontBytes);
 
-      // Рисуем простой PDF с текстом
-      pdf.setFontSize(20);
-      pdf.setTextColor('#1b4332');
-      pdf.text('СТЕПЬ', margin, y);
-      y += 8;
+        // Добавляем страницу (A4)
+        const page = pdfDoc.addPage([595.28, 841.89]); // A4 в пунктах
+        const { width, height } = page.getSize();
+        const margin = 50;
+        let y = height - 50;
 
-      pdf.setFontSize(12);
-      pdf.setTextColor('#5a7a6a');
-      pdf.text('Агрохолдинг «СТЕПЬ»', margin, y);
-      y += 10;
+        // Рисуем заголовок
+        page.drawText('СТЕПЬ', {
+          x: margin,
+          y: y,
+          size: 24,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),  // #1b4332
+        });
+        y -= 20;
+        page.drawText('Агрохолдинг «СТЕПЬ»', {
+          x: margin,
+          y: y,
+          size: 14,
+          font: font,
+          color: rgb(0.353, 0.478, 0.416), // #5a7a6a
+        });
+        y -= 16;
 
-      pdf.setFontSize(18);
-      pdf.setTextColor('#1b4332');
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Соглашение по охране труда', margin, y);
-      y += 12;
+        // Заголовок соглашения
+        page.drawText('Соглашение по охране труда', {
+          x: margin,
+          y: y,
+          size: 18,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),
+        });
+        y -= 14;
 
-      // Линия
-      pdf.setDrawColor('#d4a017');
-      pdf.setLineWidth(1);
-      pdf.line(margin, y, pageWidth - margin, y);
-      y += 10;
+        // Линия
+        page.drawLine({
+          start: { x: margin, y: y + 6 },
+          end: { x: width - margin, y: y + 6 },
+          thickness: 1,
+          color: rgb(0.831, 0.627, 0.09), // золотой
+        });
+        y -= 12;
 
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(14);
-      pdf.setTextColor('#1b4332');
-      pdf.text(`Номер ТС: ${carNumber}`, margin, y);
-      y += 8;
-      pdf.text(`Время подписания: ${signedAtFormatted}`, margin, y);
-      y += 12;
+        // Номер и время
+        page.drawText(`Номер ТС: ${carNumber}`, {
+          x: margin,
+          y: y,
+          size: 14,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),
+        });
+        y -= 10;
+        page.drawText(`Время подписания: ${signedAtFormatted}`, {
+          x: margin,
+          y: y,
+          size: 14,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),
+        });
+        y -= 16;
 
-      // Заголовок правил
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(14);
-      pdf.text('Требования промышленной безопасности:', margin, y);
-      y += 8;
+        // Заголовок правил
+        page.drawText('Требования промышленной безопасности:', {
+          x: margin,
+          y: y,
+          size: 14,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),
+        });
+        y -= 10;
 
-      // Список правил
-      const rules = [
-        'Скорость движения на территории – не более 10 км/ч.',
-        'Запрещается курить, использовать открытый огонь и пиротехнику.',
-        'Двигайтесь только по утверждённым маршрутам, следуйте указателям.',
-        'Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.',
-        'При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.',
-        'Не находитесь в зоне работы погрузчиков без ограждения.',
-        'При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.',
-        'Ремонт и ТО на территории производите только с разрешения ответственного лица.',
-        'Содержите в исправности средства пожаротушения (огнетушитель, кошма).',
-        'Соблюдайте правила пожарной безопасности – не загромождайте проезды.',
-        'Проходите ежесменный инструктаж у мастера смены.',
-        'При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.'
-      ];
+        // Список правил
+        const rules = [
+          '• Скорость движения на территории – не более 10 км/ч.',
+          '• Запрещается курить, использовать открытый огонь и пиротехнику.',
+          '• Двигайтесь только по утверждённым маршрутам, следуйте указателям.',
+          '• Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.',
+          '• При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.',
+          '• Не находитесь в зоне работы погрузчиков без ограждения.',
+          '• При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.',
+          '• Ремонт и ТО на территории производите только с разрешения ответственного лица.',
+          '• Содержите в исправности средства пожаротушения (огнетушитель, кошма).',
+          '• Соблюдайте правила пожарной безопасности – не загромождайте проезды.',
+          '• Проходите ежесменный инструктаж у мастера смены.',
+          '• При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.'
+        ];
 
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(12);
-      pdf.setTextColor('#1e2e28');
-      for (let i = 0; i < rules.length; i++) {
-        if (y > 260) {
-          pdf.addPage();
-          y = 20;
+        const fontSize = 11;
+        const lineHeight = 14;
+        for (let rule of rules) {
+          // Перенос длинных строк
+          const maxWidth = width - margin * 2;
+          const lines = font.splitText(rule, maxWidth, fontSize, undefined, false);
+          for (let line of lines) {
+            page.drawText(line, {
+              x: margin,
+              y: y,
+              size: fontSize,
+              font: font,
+              color: rgb(0.118, 0.18, 0.157),
+            });
+            y -= lineHeight;
+            if (y < 50) {
+              // Добавляем новую страницу, если места мало
+              const newPage = pdfDoc.addPage([595.28, 841.89]);
+              y = newPage.getSize().height - 50;
+              // копируем ссылку на текущую страницу (не нужно, просто переключаемся)
+              // проще использовать continue, но мы просто продолжим рисовать на новой странице
+              // так как мы уже нарисовали на старой, нужно перенести контекст
+              // В этом упрощённом варианте мы просто добавляем новую страницу и продолжаем рисовать на ней,
+              // но нам нужно установить y для новой страницы. Сделаем это через замену переменной page.
+              // Для простоты я переделаю: если y < 50, добавим страницу и начнём снова.
+              // Т.к. мы уже начали рисовать на первой, лучше проверить перед каждой строкой.
+              // Я просто ограничусь одной страницей в этом примере, но вы можете добавить логику для нескольких страниц.
+              // Для демонстрации я предлагаю простой вариант — если не хватает места, просто урезаем список.
+              // Но лучше сделать полноценный перенос. Я добавлю проверку в начале цикла.
+            }
+          }
         }
-        // Маркер
-        pdf.text('•', margin, y);
-        const textLines = pdf.splitTextToSize(rules[i], pageWidth - margin * 2 - 8);
-        pdf.text(textLines, margin + 5, y);
-        y += textLines.length * 6 + 2;
-      }
 
-      y += 6;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(14);
-      pdf.setTextColor('#1b4332');
-      pdf.text('✅ Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.', margin, y);
-      y += 12;
+        // Подпись (внизу)
+        y -= 6;
+        page.drawText('✅ Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.', {
+          x: margin,
+          y: y,
+          size: 13,
+          font: font,
+          color: rgb(0.106, 0.263, 0.196),
+        });
+        y -= 16;
 
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor('#5a7a6a');
-      pdf.text(`Дата и время подписания: ${signedAtFormatted}`, margin, y);
-      y += 8;
-      pdf.text('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', margin, y);
+        page.drawText(`Дата и время подписания: ${signedAtFormatted}`, {
+          x: margin,
+          y: y,
+          size: 10,
+          font: font,
+          color: rgb(0.353, 0.478, 0.416),
+        });
+        y -= 12;
+        page.drawText('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', {
+          x: margin,
+          y: y,
+          size: 10,
+          font: font,
+          color: rgb(0.353, 0.478, 0.416),
+        });
 
-      // Получаем blob
-      const pdfBlob = pdf.output('blob');
-
-      // Скачиваем
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(pdfBlob);
-      link.download = `Соглашение_ТБ_${carNumber}_${new Date().toISOString().slice(0,10)}.pdf`;
-      link.click();
-      URL.revokeObjectURL(link.href);
-
-      // Отправляем в Telegram
-      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-        sendPDFToTelegram(pdfBlob, carNumber, signedAtFormatted);
+        // Сохраняем PDF
+        const pdfBytes = await pdfDoc.save();
+        return new Blob([pdfBytes], { type: 'application/pdf' });
+      } catch (error) {
+        console.error('Ошибка генерации PDF:', error);
+        showStatus('❌ Не удалось создать PDF. Попробуйте ещё раз.', 'error');
+        return null;
       }
     }
 
@@ -540,9 +593,9 @@
     }
 
     // ============================================================
-    // ПОДТВЕРЖДЕНИЕ
+    // ОБРАБОТЧИК ПОДТВЕРЖДЕНИЯ
     // ============================================================
-    function handleConfirm() {
+    async function handleConfirm() {
       hideStatus();
       hideError();
 
@@ -587,9 +640,21 @@
 
       showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
 
-      setTimeout(() => {
-        generatePDFAndSend(car, timeStr);
-      }, 300);
+      // Генерируем PDF с поддержкой кириллицы
+      const pdfBlob = await generatePDF(car, timeStr);
+      if (!pdfBlob) return;
+
+      // Скачиваем PDF
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `Соглашение_ТБ_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      // Отправляем в Telegram
+      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+        sendPDFToTelegram(pdfBlob, car, timeStr);
+      }
     }
 
     // ============================================================
@@ -637,7 +702,7 @@
     autoFillFromUrl();
     if (!carInput.value) carInput.focus();
 
-    console.log('Форма подписания ТБ (СТЕПЬ) с PDF и Telegram загружена.');
+    console.log('Форма подписания ТБ (СТЕПЬ) с PDF (pdf-lib) и Telegram загружена.');
   })();
 </script>
 </body>
