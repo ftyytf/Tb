@@ -166,12 +166,12 @@
       let { page, y, width } = newPage(pdfDoc);
 
       page.drawText('СТЕПЬ', { x: MARGIN, y, size: 24, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 20;
+      y -= 34;
       page.drawText('Агрохолдинг «СТЕПЬ»', { x: MARGIN, y, size: 14, font, color: rgb(0.353, 0.478, 0.416) });
-      y -= 16;
+      y -= 26;
 
       page.drawText('Соглашение по охране труда', { x: MARGIN, y, size: 18, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 14;
+      y -= 22;
 
       page.drawLine({
         start: { x: MARGIN, y: y + 6 },
@@ -179,18 +179,18 @@
         thickness: 1,
         color: rgb(0.831, 0.627, 0.09)
       });
-      y -= 12;
+      y -= 20;
 
       page.drawText(`Номер ТС: ${carNumber}`, { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 10;
+      y -= 20;
       page.drawText(`Время подписания: ${signedAtFormatted}`, { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 16;
+      y -= 28;
 
       page.drawText('Требования промышленной безопасности:', { x: MARGIN, y, size: 14, font, color: rgb(0.106, 0.263, 0.196) });
-      y -= 10;
+      y -= 20;
 
       const fontSize = 11;
-      const lineHeight = 14;
+      const lineHeight = 16;
       for (const rule of RULES) {
         const maxWidth = width - MARGIN * 2;
         const lines = wrapText('• ' + rule, font, fontSize, maxWidth);
@@ -203,17 +203,22 @@
         }
       }
 
-      if (y < MARGIN + 40) {
+      if (y < MARGIN + 70) {
         ({ page, y, width } = newPage(pdfDoc));
       }
 
-      y -= 6;
-      page.drawText('Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.', {
-        x: MARGIN, y, size: 13, font, color: rgb(0.106, 0.263, 0.196)
-      });
-      y -= 16;
+      y -= 10;
+      const ackLines = wrapText(
+        'Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.',
+        font, 13, width - MARGIN * 2
+      );
+      for (const line of ackLines) {
+        page.drawText(line, { x: MARGIN, y, size: 13, font, color: rgb(0.106, 0.263, 0.196) });
+        y -= 18;
+      }
+      y -= 4;
       page.drawText(`Дата и время подписания: ${signedAtFormatted}`, { x: MARGIN, y, size: 10, font, color: rgb(0.353, 0.478, 0.416) });
-      y -= 12;
+      y -= 16;
       page.drawText('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', { x: MARGIN, y, size: 10, font, color: rgb(0.353, 0.478, 0.416) });
 
       const pdfBytes = await pdfDoc.save();
