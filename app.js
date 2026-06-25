@@ -138,11 +138,12 @@
 
   async function generatePDF(carNumber, signedAtFormatted) {
     try {
-      const fontUrl = 'https://cdn.jsdelivr.net/npm/@pdf-lib/fonts@1.0.0/DejaVuSans.ttf';
+      const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/apache/roboto/static/Roboto-Regular.ttf';
       const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
 
       const { PDFDocument, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
       const font = await pdfDoc.embedFont(fontBytes);
 
       let { page, y, width } = newPage(pdfDoc);
