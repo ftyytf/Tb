@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Подписание соглашения по ТБ – Агрохолдинг «СТЕПЬ»</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Только jsPDF, html2canvas не нужен -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
+    /* (стили без изменений, кроме удаления блока pdf-content) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -200,50 +201,6 @@
     .footer span { display: inline-block; margin: 0 4px; }
     .footer .brand { font-weight: 600; color: #1b4332; }
 
-    /* PDF-блок: видимый, но прозрачный и не перехватывает события */
-    #pdf-content {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 700px;
-      opacity: 0;
-      pointer-events: none;
-      z-index: -1;
-      background: white;
-      padding: 20px;
-    }
-    .pdf-page {
-      width: 700px;
-      padding: 40px;
-      font-family: Arial, sans-serif;
-      background: white;
-      color: #1b4332;
-      box-sizing: border-box;
-    }
-    .pdf-page h1 {
-      font-size: 24px;
-      color: #1b4332;
-      border-bottom: 3px solid #d4a017;
-      padding-bottom: 10px;
-    }
-    .pdf-page .pdf-logo {
-      font-weight: 800;
-      font-size: 28px;
-      color: #1b4332;
-      margin-bottom: 6px;
-    }
-    .pdf-page .pdf-sub { font-size: 14px; color: #5a7a6a; margin-bottom: 20px; }
-    .pdf-page .pdf-rules { font-size: 12px; line-height: 1.5; margin: 16px 0; }
-    .pdf-page .pdf-rules ul { padding-left: 20px; margin: 6px 0; }
-    .pdf-page .pdf-rules ul li { margin-bottom: 4px; }
-    .pdf-page .pdf-footer {
-      margin-top: 30px;
-      border-top: 1px solid #d4d9c8;
-      padding-top: 16px;
-      font-size: 14px;
-    }
-    .pdf-page .pdf-footer strong { color: #1b4332; }
-
     @media (max-width: 480px) {
       body { padding: 10px; }
       .container { padding: 18px 14px 16px; border-radius: 20px; }
@@ -322,47 +279,6 @@
     <span>💾 Данные сохраняются локально</span>
     <span>•</span>
     <span class="brand">Агрохолдинг «СТЕПЬ»</span>
-  </div>
-</div>
-
-<!-- Блок для PDF – видимый, но прозрачный и не взаимодействует -->
-<div id="pdf-content">
-  <div class="pdf-page" id="pdfPage">
-    <div class="pdf-logo">СТЕПЬ</div>
-    <div style="font-size:14px; color:#5a7a6a; margin-bottom:6px;">Агрохолдинг «СТЕПЬ»</div>
-    <h1>Соглашение по охране труда</h1>
-    <div style="font-size:14px; color:#1b4332; margin:8px 0 12px;">
-      Номер ТС: <strong id="pdfCar">________</strong>
-    </div>
-    <div style="font-size:14px; color:#1b4332; margin-bottom:16px;">
-      Время подписания: <strong id="pdfTime">________</strong>
-    </div>
-    <div class="pdf-rules">
-      <p><strong>Требования промышленной безопасности:</strong></p>
-      <ul>
-        <li>Скорость движения на территории – не более 10 км/ч.</li>
-        <li>Запрещается курить, использовать открытый огонь и пиротехнику.</li>
-        <li>Двигайтесь только по утверждённым маршрутам, следуйте указателям.</li>
-        <li>Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.</li>
-        <li>При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.</li>
-        <li>Не находитесь в зоне работы погрузчиков без ограждения.</li>
-        <li>При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.</li>
-        <li>Ремонт и ТО на территории производите только с разрешения ответственного лица.</li>
-        <li>Содержите в исправности средства пожаротушения (огнетушитель, кошма).</li>
-        <li>Соблюдайте правила пожарной безопасности – не загромождайте проезды.</li>
-        <li>Проходите ежесменный инструктаж у мастера смены.</li>
-        <li>При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.</li>
-      </ul>
-    </div>
-    <div class="pdf-footer">
-      <p>✅ Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.</p>
-      <p style="margin-top:12px; font-size:12px; color:#5a7a6a;">
-        Дата и время подписания: <span id="pdfTimeStamp">________</span>
-      </p>
-      <p style="margin-top:6px; font-size:11px; color:#8aa29a;">
-        Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».
-      </p>
-    </div>
   </div>
 </div>
 
@@ -478,52 +394,121 @@
     });
 
     // ============================================================
-    // ГЕНЕРАЦИЯ PDF И ОТПРАВКА В TELEGRAM
+    // ГЕНЕРАЦИЯ PDF (ТОЛЬКО ТЕКСТ, БЕЗ html2canvas)
     // ============================================================
     function generatePDFAndSend(carNumber, signedAtFormatted) {
-      // Заполняем данные
-      document.getElementById('pdfCar').textContent = carNumber;
-      document.getElementById('pdfTime').textContent = signedAtFormatted;
-      document.getElementById('pdfTimeStamp').textContent = signedAtFormatted;
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 20;
+      let y = 20;
 
-      const pdfPage = document.getElementById('pdfPage');
+      // Шрифты (используем стандартные)
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(20);
+      pdf.setTextColor('#1b4332');
+      pdf.text('СТЕПЬ', margin, y);
+      y += 8;
 
-      // Используем html2canvas с дополнительными настройками для корректного рендеринга
-      html2canvas(pdfPage, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: 700,
-        height: pdfPage.scrollHeight,
-        onclone: function(clonedDoc) {
-          // Убедимся, что в клоне все стили применены
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(12);
+      pdf.setTextColor('#5a7a6a');
+      pdf.text('Агрохолдинг «СТЕПЬ»', margin, y);
+      y += 10;
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(18);
+      pdf.setTextColor('#1b4332');
+      pdf.text('Соглашение по охране труда', margin, y);
+      y += 12;
+
+      // Линия
+      pdf.setDrawColor('#d4a017');
+      pdf.setLineWidth(1);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 10;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(14);
+      pdf.setTextColor('#1b4332');
+      pdf.text(`Номер ТС: ${carNumber}`, margin, y);
+      y += 8;
+      pdf.text(`Время подписания: ${signedAtFormatted}`, margin, y);
+      y += 12;
+
+      // Заголовок правил
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.text('Требования промышленной безопасности:', margin, y);
+      y += 8;
+
+      // Список правил (используем символы для маркеров)
+      const rules = [
+        'Скорость движения на территории – не более 10 км/ч.',
+        'Запрещается курить, использовать открытый огонь и пиротехнику.',
+        'Двигайтесь только по утверждённым маршрутам, следуйте указателям.',
+        'Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.',
+        'При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.',
+        'Не находитесь в зоне работы погрузчиков без ограждения.',
+        'При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.',
+        'Ремонт и ТО на территории производите только с разрешения ответственного лица.',
+        'Содержите в исправности средства пожаротушения (огнетушитель, кошма).',
+        'Соблюдайте правила пожарной безопасности – не загромождайте проезды.',
+        'Проходите ежесменный инструктаж у мастера смены.',
+        'При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.'
+      ];
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(12);
+      pdf.setTextColor('#1e2e28');
+      for (let i = 0; i < rules.length; i++) {
+        // Проверяем, не выходит ли за пределы страницы
+        if (y > 260) {
+          pdf.addPage();
+          y = 20;
         }
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'pt', 'a4');
-        const imgWidth = pdf.internal.pageSize.getWidth();
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        // Рисуем маркер (точка)
+        pdf.text('•', margin, y);
+        // Текст правила с отступом
+        const textLines = pdf.splitTextToSize(rules[i], pageWidth - margin * 2 - 8);
+        pdf.text(textLines, margin + 5, y);
+        y += textLines.length * 6 + 2;
+      }
 
-        // Скачиваем
-        const pdfBlob = pdf.output('blob');
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(pdfBlob);
-        link.download = `Соглашение_ТБ_${carNumber}_${new Date().toISOString().slice(0,10)}.pdf`;
-        link.click();
-        URL.revokeObjectURL(link.href);
+      y += 6;
+      // Подпись
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.setTextColor('#1b4332');
+      pdf.text('✅ Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.', margin, y);
+      y += 12;
 
-        // Отправляем в Telegram
-        if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-          sendPDFToTelegram(pdfBlob, carNumber, signedAtFormatted);
-        }
-      }).catch(err => {
-        console.error('Ошибка генерации PDF:', err);
-        showStatus('❌ Не удалось сгенерировать PDF. Попробуйте ещё раз.', 'error');
-      });
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor('#5a7a6a');
+      pdf.text(`Дата и время подписания: ${signedAtFormatted}`, margin, y);
+      y += 8;
+      pdf.text('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', margin, y);
+
+      // Получаем blob PDF
+      const pdfBlob = pdf.output('blob');
+
+      // Скачиваем
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `Соглашение_ТБ_${carNumber}_${new Date().toISOString().slice(0,10)}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      // Отправляем в Telegram
+      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+        sendPDFToTelegram(pdfBlob, carNumber, signedAtFormatted);
+      }
     }
 
+    // ============================================================
+    // ОТПРАВКА В TELEGRAM
+    // ============================================================
     function sendPDFToTelegram(pdfBlob, carNumber, signedAt) {
       const formData = new FormData();
       formData.append('chat_id', TELEGRAM_CHAT_ID);
@@ -595,9 +580,10 @@
 
       showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
 
+      // Генерируем PDF и отправляем в Telegram
       setTimeout(() => {
         generatePDFAndSend(car, timeStr);
-      }, 500);
+      }, 300);
     }
 
     // ============================================================
