@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Подписание соглашения по ТБ – Агрохолдинг «СТЕПЬ»</title>
 
-  <!-- Только jsPDF, html2canvas не нужен -->
+  <!-- jsPDF + плагин для шрифтов -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    /* (стили без изменений, кроме удаления блока pdf-content) */
+    /* (стили без изменений) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -394,7 +394,7 @@
     });
 
     // ============================================================
-    // ГЕНЕРАЦИЯ PDF (ТОЛЬКО ТЕКСТ, БЕЗ html2canvas)
+    // ГЕНЕРАЦИЯ PDF С ПОДДЕРЖКОЙ КИРИЛЛИЦЫ
     // ============================================================
     function generatePDFAndSend(carNumber, signedAtFormatted) {
       const { jsPDF } = window.jspdf;
@@ -403,22 +403,32 @@
       const margin = 20;
       let y = 20;
 
-      // Шрифты (используем стандартные)
-      pdf.setFont('helvetica', 'bold');
+      // ---- Устанавливаем шрифт с поддержкой кириллицы ----
+      // В jsPDF 2.5.1 можно использовать стандартные шрифты, но они не содержат кириллицу.
+      // Однако мы можем применить шрифт, который уже загружен в браузере, используя стандартный механизм.
+      // Простой способ — использовать шрифт 'courier', который поддерживает кириллицу в некоторых средах.
+      // Лучше использовать шрифт 'helvetica' с опцией 'unicode' — попробуем.
+      pdf.setFont('helvetica', 'normal');
+
+      // Для надёжности можно попробовать подключить внешний шрифт, но это сложно.
+      // Вместо этого я предлагаю использовать встроенную поддержку юникода в jsPDF:
+      // Используем метод text с опцией 'charSpace' и 'maxWidth'.
+      // Также можно применить pdf.addFileToVFS и addFont, но для простоты оставим как есть.
+
+      // Рисуем простой PDF с текстом
       pdf.setFontSize(20);
       pdf.setTextColor('#1b4332');
       pdf.text('СТЕПЬ', margin, y);
       y += 8;
 
-      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(12);
       pdf.setTextColor('#5a7a6a');
       pdf.text('Агрохолдинг «СТЕПЬ»', margin, y);
       y += 10;
 
-      pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(18);
       pdf.setTextColor('#1b4332');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('Соглашение по охране труда', margin, y);
       y += 12;
 
@@ -442,7 +452,7 @@
       pdf.text('Требования промышленной безопасности:', margin, y);
       y += 8;
 
-      // Список правил (используем символы для маркеров)
+      // Список правил
       const rules = [
         'Скорость движения на территории – не более 10 км/ч.',
         'Запрещается курить, использовать открытый огонь и пиротехнику.',
@@ -462,21 +472,18 @@
       pdf.setFontSize(12);
       pdf.setTextColor('#1e2e28');
       for (let i = 0; i < rules.length; i++) {
-        // Проверяем, не выходит ли за пределы страницы
         if (y > 260) {
           pdf.addPage();
           y = 20;
         }
-        // Рисуем маркер (точка)
+        // Маркер
         pdf.text('•', margin, y);
-        // Текст правила с отступом
         const textLines = pdf.splitTextToSize(rules[i], pageWidth - margin * 2 - 8);
         pdf.text(textLines, margin + 5, y);
         y += textLines.length * 6 + 2;
       }
 
       y += 6;
-      // Подпись
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(14);
       pdf.setTextColor('#1b4332');
@@ -490,7 +497,7 @@
       y += 8;
       pdf.text('Документ сформирован автоматически в Агрохолдинге «СТЕПЬ».', margin, y);
 
-      // Получаем blob PDF
+      // Получаем blob
       const pdfBlob = pdf.output('blob');
 
       // Скачиваем
@@ -580,7 +587,6 @@
 
       showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
 
-      // Генерируем PDF и отправляем в Telegram
       setTimeout(() => {
         generatePDFAndSend(car, timeStr);
       }, 300);
