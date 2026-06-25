@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Подписание соглашения по ТБ – Агрохолдинг «СТЕПЬ»</title>
+  <style>
+    /* ----- Сброс и базовые стили (адаптивно) ----- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: #f5f2ea;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 520px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(27, 67, 50, 0.12);
+      padding: 24px 20px 20px;
+      border: 1px solid rgba(27, 67, 50, 0.06);
+    }
+
+    /* ----- Шапка в стиле «СТЕПЬ» (логотип без ®) ----- */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid #d4a017;
+    }
+
+    .logo {
+      background: #ffffff;
+      color: #1b4332;
+      font-weight: 800;
+      font-size: 20px;
+      padding: 4px 14px 4px 12px;
+      border-radius: 40px 8px 8px 40px;
+      letter-spacing: 1.5px;
+      line-height: 1.2;
+      flex-shrink: 0;
+      border: 2px solid #1b4332;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1b4332;
+      line-height: 1.3;
+    }
+    .header-title small {
+      font-weight: 400;
+      font-size: 12px;
+      color: #5a7a6a;
+      display: block;
+    }
+
+    /* ----- Вспомогательные блоки ----- */
+    .sub {
+      background: #eaf5ed;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #1b4332;
+      margin-bottom: 18px;
+      border-left: 4px solid #d4a017;
+      font-weight: 500;
+    }
+
+    .agreement-box {
+      background: #f8fbf9;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #1e2e28;
+      border: 1px solid #e2e8e0;
+      margin-bottom: 20px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .agreement-box h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: #1b4332;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .agreement-box h3::before {
+      content: "🛡️";
+      font-size: 18px;
+    }
+    .agreement-box ul { padding-left: 20px; margin: 4px 0; }
+    .agreement-box ul li { margin-bottom: 2px; }
+    .agreement-box .highlight {
+      background: #eaf5ed;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-weight: 600;
+      color: #1b4332;
+      border: 1px solid #c0d9cd;
+      font-size: 13px;
+    }
+
+    /* ----- Поле ввода ----- */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-weight: 700;
+      font-size: 15px;
+      color: #1b4332;
+      margin-bottom: 4px;
+    }
+    .field input {
+      width: 100%;
+      padding: 16px 18px;
+      font-size: 22px;
+      font-weight: 600;
+      border: 2px solid #d4d9c8;
+      border-radius: 14px;
+      background: #ffffff;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #1b4332;
+    }
+    .field input:focus {
+      border-color: #2d6a4f;
+      box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.12);
+    }
+    .field input.invalid {
+      border-color: #b91c1c;
+      box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.10);
+    }
+    .field .hint {
+      font-size: 12px;
+      color: #5a7a6a;
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+    }
+    .field .hint strong {
+      color: #1b4332;
+      background: #eaf5ed;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .field .error-text {
+      color: #b91c1c;
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+      font-weight: 500;
+    }
+    .field .error-text.visible { display: block; }
+
+    /* ----- Кнопка ----- */
+    .btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #2d6a4f;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(45, 106, 79, 0.30);
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.96); background: #1b4332; }
+    .btn:disabled { opacity: 0.6; pointer-events: none; }
+
+    /* ----- Статус ----- */
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 15px;
+      text-align: center;
+      display: none;
+      font-weight: 500;
+    }
+    .status.success {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #b8d4c2;
+    }
+    .status.error {
+      display: block;
+      background: #f8dddd;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status.info {
+      display: block;
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    /* ----- Подвал ----- */
+    .footer {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #8aa29a;
+      text-align: center;
+      border-top: 1px solid #e2e8e0;
+      padding-top: 14px;
+    }
+    .footer span { display: inline-block; margin: 0 4px; }
+    .footer .brand { font-weight: 600; color: #1b4332; }
+
+    /* ============================================================
+       АДАПТИВНЫЕ ДОРАБОТКИ ДЛЯ СМАРТФОНОВ
+       ============================================================ */
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .container { padding: 18px 14px 16px; border-radius: 20px; }
+      .logo { font-size: 18px; padding: 3px 12px 3px 10px; }
+      .header-title { font-size: 14px; }
+      .header-title small { font-size: 11px; }
+      .sub { font-size: 12px; padding: 8px 12px; }
+      .agreement-box { padding: 12px; font-size: 12px; max-height: 220px; }
+      .agreement-box h3 { font-size: 14px; }
+      .field input { font-size: 20px; padding: 14px 16px; }
+      .field label { font-size: 14px; }
+      .btn { font-size: 16px; padding: 16px; }
+      .status { font-size: 14px; padding: 10px; }
+      .footer { font-size: 10px; }
+    }
+
+    @media (max-width: 380px) {
+      .container { padding: 14px 10px; }
+      .logo { font-size: 16px; padding: 2px 10px 2px 8px; }
+      .header-title { font-size: 12px; }
+      .field input { font-size: 18px; padding: 12px 14px; }
+      .btn { font-size: 15px; padding: 14px; }
+    }
+
+    /* Для устройств с сенсорным экраном — увеличиваем область касания */
+    @media (pointer: coarse) {
+      .btn { padding: 18px; }
+      .field input { padding: 18px 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- ШАПКА -->
+  <div class="header">
+    <div class="logo">СТЕПЬ</div>
+    <div class="header-title">
+      Соглашение по охране труда
+      <small>Обязательно для всех водителей</small>
+    </div>
+  </div>
+
+  <div class="sub">🔐 Подтверждение требуется для въезда на территорию и допуска к взвешиванию.</div>
+
+  <!-- ТЕКСТ СОГЛАШЕНИЯ -->
+  <div class="agreement-box">
+    <h3>Требования промышленной безопасности</h3>
+    <ul>
+      <li>Скорость движения на территории – не более 10 км/ч.</li>
+      <li>Запрещается курить, использовать открытый огонь и пиротехнику.</li>
+      <li>Двигайтесь только по утверждённым маршрутам, следуйте указателям.</li>
+      <li>Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.</li>
+      <li>При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.</li>
+      <li>Не находитесь в зоне работы погрузчиков без ограждения.</li>
+      <li>При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.</li>
+      <li>Ремонт и ТО на территории производите только с разрешения ответственного лица.</li>
+      <li>Содержите в исправности средства пожаротушения (огнетушитель, кошма).</li>
+      <li>Соблюдайте правила пожарной безопасности – не загромождайте проезды.</li>
+      <li>Проходите ежесменный инструктаж у мастера смены.</li>
+      <li>При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.</li>
+    </ul>
+    <div class="highlight">✅ Я ознакомлен(а) с требованиями и обязуюсь их строго соблюдать.</div>
+  </div>
+
+  <!-- ПОЛЕ НОМЕРА -->
+  <div class="field">
+    <label for="carInput">Государственный номер ТС</label>
+    <input type="text" id="carInput" placeholder="А777АА77" autocomplete="off" maxlength="9" />
+    <div class="hint">
+      <span>📌</span> Формат: <strong>Б ЦЦЦ ББ РР</strong>
+      <span style="color:#b91c1c;">🚫</span> <strong style="background:#f8dddd; color:#721c24;">000</strong> запрещён
+    </div>
+    <div class="error-text" id="errorText">Некорректный формат или код региона.</div>
+  </div>
+
+  <button class="btn" id="confirmBtn">✅ Подтвердить согласие</button>
+
+  <div id="statusMessage" class="status"></div>
+
+  <div class="footer">
+    <span>⏱️ Время фиксируется автоматически</span>
+    <span>•</span>
+    <span>💾 Данные сохраняются локально</span>
+    <span>•</span>
+    <span class="brand">Агрохолдинг «СТЕПЬ»</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+
+    // ============================================================
+    // 1. ДОПУСТИМЫЕ СИМВОЛЫ
+    // ============================================================
+    const ALLOWED_LETTERS = ['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
+    const DIGITS = ['0','1','2','3','4','5','6','7','8','9'];
+    const ALLOWED_CHARS = ALLOWED_LETTERS.concat(DIGITS);
+
+    // ============================================================
+    // 2. КОДЫ РЕГИОНОВ РФ (актуальные на 2026 год)
+    // ============================================================
+    const REGION_CODES = new Set([
+      '01','101','02','102','702','03','103','04','05','105','06','07','08','09','109',
+      '10','11','111','12','13','113','14','15','16','116','716','17','18','118','19',
+      '21','121','82','182','95','22','222','23','93','123','193','323','24','88','124',
+      '224','25','125','725','26','126','27','41','59','159','75','28','29','30','130',
+      '31','32','33','34','134','35','36','136','37','38','138','39','139','40','42',
+      '142','43','44','45','46','47','147','48','49','50','90','150','190','250','550',
+      '750','790','51','52','152','252','53','54','154','55','155','56','156','57','58',
+      '158','60','61','161','761','62','63','163','763','64','164','65','66','96','196',
+      '166','67','68','69','169','70','71','72','172','73','173','74','174','774','76',
+      '77','97','99','177','197','199','777','797','799','977','78','98','178','198',
+      '778','92','192','79','83','86','186','87','89','80','180','81','181','84','184',
+      '85','185','94'
+    ]);
+
+    // ============================================================
+    // 3. МАСКА: Б ЦЦЦ ББ РР (позиции 0..8)
+    // ============================================================
+    function isAllowedChar(ch, pos) {
+      ch = ch.toUpperCase();
+      if (pos === 0) return ALLOWED_LETTERS.includes(ch);
+      if (pos >= 1 && pos <= 3) return DIGITS.includes(ch);
+      if (pos >= 4 && pos <= 5) return ALLOWED_LETTERS.includes(ch);
+      if (pos >= 6 && pos <= 8) return DIGITS.includes(ch);
+      return false;
+    }
+
+    // ============================================================
+    // 4. ПОЛНАЯ ПРОВЕРКА НОМЕРА
+    // ============================================================
+    function isValidFull(value) {
+      if (value.length < 7 || value.length > 9) return false;
+
+      // 4.1 Маска
+      for (let i = 0; i < value.length; i++) {
+        if (!isAllowedChar(value[i], i)) return false;
+      }
+
+      // 4.2 Запрет трёх нулей в основной части (позиции 1-3)
+      if (value.substring(1, 4) === '000') return false;
+
+      // 4.3 Код региона (последние 2 или 3 цифры)
+      let regionCode = '';
+      if (value.length === 7) {
+        regionCode = value.substring(5, 7);
+      } else if (value.length === 8) {
+        regionCode = value.substring(5, 8);
+      } else if (value.length === 9) {
+        regionCode = value.substring(6, 9);
+      }
+      if (!regionCode) return false;
+      return REGION_CODES.has(regionCode);
+    }
+
+    // ============================================================
+    // 5. ЭЛЕМЕНТЫ И УПРАВЛЕНИЕ
+    // ============================================================
+    const carInput = document.getElementById('carInput');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const statusEl = document.getElementById('statusMessage');
+    const errorText = document.getElementById('errorText');
+
+    function showStatus(text, type) {
+      statusEl.textContent = text;
+      statusEl.className = 'status ' + type;
+      statusEl.style.display = 'block';
+    }
+    function hideStatus() { statusEl.style.display = 'none'; }
+    function hideError() {
+      errorText.classList.remove('visible');
+      carInput.classList.remove('invalid');
+    }
+    function showError() {
+      errorText.classList.add('visible');
+      carInput.classList.add('invalid');
+    }
+
+    // ============================================================
+    // 6. ФИЛЬТРАЦИЯ ВВОДА ПО МАСКЕ
+    // ============================================================
+    carInput.addEventListener('input', function() {
+      let current = this.value.toUpperCase();
+      let filtered = '';
+      for (let ch of current) {
+        if (ALLOWED_CHARS.includes(ch)) filtered += ch;
+      }
+      let masked = '';
+      for (let i = 0; i < filtered.length; i++) {
+        const ch = filtered[i];
+        if (isAllowedChar(ch, i)) masked += ch;
+        else break;
+      }
+      if (masked.length > 9) masked = masked.slice(0, 9);
+      this.value = masked;
+      hideError();
+      hideStatus();
+    });
+
+    // ============================================================
+    // 7. ПРОВЕРКА ПРИ ПОТЕРЕ ФОКУСА
+    // ============================================================
+    carInput.addEventListener('blur', function() {
+      const val = this.value;
+      if (val.length > 0 && !isValidFull(val)) {
+        showError();
+      } else {
+        hideError();
+      }
+    });
+
+    // ============================================================
+    // 8. ПОДТВЕРЖДЕНИЕ
+    // ============================================================
+    function handleConfirm() {
+      hideStatus();
+      hideError();
+
+      const car = carInput.value.trim().toUpperCase();
+      if (car === '') {
+        showStatus('⚠️ Введите государственный номер', 'error');
+        carInput.focus();
+        return;
+      }
+
+      // Доп. проверка на три нуля
+      if (car.substring(1, 4) === '000') {
+        showError();
+        showStatus('⚠️ Номер с тремя нулями (000) запрещён.', 'error');
+        return;
+      }
+
+      if (!isValidFull(car)) {
+        showError();
+        // Подсказка про регион
+        let regionPart = '';
+        if (car.length === 7) regionPart = car.substring(5, 7);
+        else if (car.length === 8) regionPart = car.substring(5, 8);
+        else if (car.length === 9) regionPart = car.substring(6, 9);
+        let hint = 'Проверьте формат (Б ЦЦЦ ББ РР) и код региона.';
+        if (regionPart && !REGION_CODES.has(regionPart)) {
+          hint = `Код региона "${regionPart}" не существует.`;
+        }
+        showStatus(`⚠️ Некорректный номер. ${hint}`, 'error');
+        return;
+      }
+
+      // Сохраняем запись в localStorage
+      const record = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        carNumber: car,
+        signedAt: new Date().toISOString(),
+        version: '1.0'
+      };
+      let history = JSON.parse(localStorage.getItem('tb_signatures') || '[]');
+      history.push(record);
+      localStorage.setItem('tb_signatures', JSON.stringify(history));
+
+      const timeStr = new Date(record.signedAt).toLocaleString('ru-RU', { hour12: false });
+      showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
+    }
+
+    // ============================================================
+    // 9. АВТОЗАПОЛНЕНИЕ ИЗ URL (?car=...)
+    // ============================================================
+    function autoFillFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const car = params.get('car');
+      if (!car) return;
+      let val = car.trim().toUpperCase();
+      let filtered = '';
+      for (let ch of val) {
+        if (ALLOWED_CHARS.includes(ch)) filtered += ch;
+      }
+      let masked = '';
+      for (let i = 0; i < filtered.length; i++) {
+        const ch = filtered[i];
+        if (isAllowedChar(ch, i)) masked += ch;
+        else break;
+      }
+      if (masked.length > 9) masked = masked.slice(0, 9);
+      carInput.value = masked;
+      if (masked.length >= 7 && isValidFull(masked)) {
+        showStatus(`Номер подставлен: ${masked}`, 'info');
+        setTimeout(hideStatus, 3000);
+      } else if (masked.length > 0) {
+        showStatus('⚠️ Автозаполненный номер не соответствует формату', 'error');
+      }
+    }
+
+    // ============================================================
+    // 10. СОБЫТИЯ
+    // ============================================================
+    confirmBtn.addEventListener('click', handleConfirm);
+    carInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirm();
+      }
+    });
+
+    // ============================================================
+    // 11. ЗАПУСК
+    // ============================================================
+    autoFillFromUrl();
+    if (!carInput.value) carInput.focus();
+
+    console.log('Форма подписания ТБ (СТЕПЬ, адаптив) загружена.');
+  })();
+</script>
+</body>
+</html>
