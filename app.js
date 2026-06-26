@@ -401,7 +401,7 @@
   // ============================================================
   // ОТПРАВКА В TELEGRAM
   // ============================================================
-  function sendPDFToTelegram(pdfBlob, driverName, carNumber, signedAt) {
+  async function sendPDFToTelegram(pdfBlob, driverName, carNumber, signedAt) {
     const dateForName = new Date().toISOString().slice(0, 10);
     const formData = new FormData();
     formData.append('chat_id', TELEGRAM_CHAT_ID);
@@ -410,21 +410,20 @@
     formData.append('document', pdfBlob, `ТБ_${carNumber}_${dateForName}.pdf`);
     formData.append('caption', `✅ Подписание правил посещения терминала\nВодитель: ${driverName}\nНомер ТС: ${carNumber}\nДата: ${dateForName}\nВремя: ${signedAt}`);
 
-    fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.ok) {
-          console.log('PDF отправлен в Telegram');
-        } else {
-          console.error('Ошибка отправки в Telegram:', data.description);
-        }
-      })
-      .catch(err => {
-        console.error('Ошибка соединения с Telegram:', err);
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
+        method: 'POST',
+        body: formData
       });
+      const data = await response.json();
+      if (data.ok) {
+        console.log('PDF отправлен в Telegram');
+      } else {
+        console.error('Ошибка отправки в Telegram:', data.description);
+      }
+    } catch (err) {
+      console.error('Ошибка соединения с Telegram:', err);
+    }
   }
 
   // ============================================================
@@ -502,15 +501,18 @@
       const pdfBlob = await generatePDF(driverName, car, timeStr);
       if (!pdfBlob) return;
 
+      // Сначала отправляем в Telegram и ждём завершения: на iOS Safari клик по
+      // ссылке-скачиванию blob: иногда открывает PDF в той же вкладке вместо
+      // скачивания, что прерывает ещё не завершённый запрос к Telegram.
+      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
+        await sendPDFToTelegram(pdfBlob, driverName, car, timeStr);
+      }
+
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `Правила_посещения_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
       link.click();
       URL.revokeObjectURL(link.href);
-
-      if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-        sendPDFToTelegram(pdfBlob, driverName, car, timeStr);
-      }
     } finally {
       confirmBtn.disabled = !ackCheckbox.checked;
       confirmBtn.textContent = originalLabel;
