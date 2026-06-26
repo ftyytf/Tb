@@ -285,7 +285,9 @@
 
   async function loadFont(pdfDoc, url) {
     const bytes = await fetch(url).then(res => res.arrayBuffer());
-    return pdfDoc.embedFont(bytes);
+    // subset: true — встраивает только реально используемые символы шрифта,
+    // а не весь файл шрифта (~750 КБ), что резко уменьшает размер PDF.
+    return pdfDoc.embedFont(bytes, { subset: true });
   }
 
   async function generatePDF(driverName, carNumber, signedAtFormatted) {
