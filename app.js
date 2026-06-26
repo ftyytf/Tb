@@ -120,9 +120,19 @@
   // Фамилия + один или два инициала с точками. Отчество не обязательно:
   // допускаются варианты "Иванов И." и "Иванов И.И."
   const NAME_PATTERN = /^[А-ЯЁ][а-яё]+(-[А-ЯЁ][а-яё]+)? [А-ЯЁ]\.([А-ЯЁ]\.)?$/;
+  const NAME_ALLOWED_CHARS = /[А-ЯЁа-яё .-]/;
 
   function isValidName(value) {
     return NAME_PATTERN.test(value.trim());
+  }
+
+  function filterNameInput(rawValue) {
+    let filtered = '';
+    for (const ch of rawValue) {
+      if (NAME_ALLOWED_CHARS.test(ch)) filtered += ch;
+    }
+    // Не более двух точек подряд (фамилия + два инициала)
+    return filtered.replace(/\.{2,}/g, '.').replace(/ {2,}/g, ' ');
   }
 
   // ============================================================
@@ -219,6 +229,7 @@
   });
 
   nameInput.addEventListener('input', function() {
+    this.value = filterNameInput(this.value);
     hideNameError();
     hideStatus();
   });
