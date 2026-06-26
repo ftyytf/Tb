@@ -25,19 +25,52 @@
     '85','185','94'
   ]);
 
-  const RULES = [
-    'Скорость движения на территории – не более 10 км/ч.',
-    'Запрещается курить, использовать открытый огонь и пиротехнику.',
-    'Двигайтесь только по утверждённым маршрутам, следуйте указателям.',
-    'Перед выездом убедитесь в исправности тормозов, рулевого управления и звукового сигнала.',
-    'При погрузочно-разгрузочных работах надевайте защитную каску и сигнальный жилет.',
-    'Не находитесь в зоне работы погрузчиков без ограждения.',
-    'При аварии или поломке немедленно сообщите диспетчеру по рации или телефону.',
-    'Ремонт и ТО на территории производите только с разрешения ответственного лица.',
-    'Содержите в исправности средства пожаротушения (огнетушитель, кошма).',
-    'Соблюдайте правила пожарной безопасности – не загромождайте проезды.',
-    'Проходите ежесменный инструктаж у мастера смены.',
-    'При обнаружении разливов ГСМ, посторонних предметов – немедленно сообщите.'
+  const INTRO_TEXT =
+    'Зерновой терминал является опасным производственным объектом. На территории терминала ' +
+    'задействованы различные машины и механизмы, производятся различные виды работ повышенной ' +
+    'опасности. Все это делает территорию терминала местом, при посещении которого необходимо ' +
+    'уделять особое внимание собственной безопасности.';
+
+  const SECTIONS = [
+    {
+      title: '1. Опасности на территории терминала и как их избежать',
+      items: [
+        'Падение при движении — не отвлекайтесь и не отвлекайте других, не спешите при ходьбе, смотрите под ноги, аккуратно выходите из кабины, держась за поручни.',
+        'Поражение электрическим током — запрещается дотрагиваться до электрических кабелей, проводов, электроинструмента. Во время грозы запрещается приближаться к устройствам молниеотвода (прожекторные мачты являются устройствами молниеотвода) ближе, чем на 4 метра.',
+        'Наезд движущегося транспорта — строго следуйте маршруту движения, соблюдая разметку и ПДД.',
+        'Падение в зоне проведения земляных работ — не приближайтесь ближе 2 метров к краю траншеи, котлована, выемки грунта. Не заходите и не заезжайте за защитные ограждения.',
+        'Опасность травмирования при разгрузке — необходимо быть осторожным, действовать согласованно с сотрудниками терминала.'
+      ]
+    },
+    {
+      title: '2. На территории Зернового терминала запрещается',
+      items: [
+        'Проходить в местах, не предназначенных для прохода, и за внешнее ограждение.',
+        'Употреблять алкогольные напитки, наркотические и токсические вещества.',
+        'Загрязнять территорию предприятия.',
+        'Разжигать огонь, проводить огнеопасные работы без разрешительных документов.',
+        'Скрывать информацию об авариях, пожарах, инцидентах, случаях нарушения требований безопасности.',
+        'Перевозить людей и грузы с нарушением требований безопасности.',
+        'Осуществлять фото- и видеосъёмку производственной деятельности или установок без специального (письменного) разрешения со стороны руководства терминала.',
+        'Приносить, хранить и использовать огнестрельное оружие, боеприпасы и взрывчатые вещества.',
+        'Курить в запрещённых и необорудованных для курения местах, в кабине.',
+        'Отдыхать или спать в кабине или закрытом кузове на стоянке при работающем двигателе.'
+      ]
+    },
+    {
+      title: '3. Требования при движении и разгрузке',
+      items: [
+        'Водители зерновозов заезжают на территорию после оформления документов у диспетчера.',
+        'При передвижении на автотранспорте обязательно используйте ремень безопасности.',
+        'Соблюдайте скоростной режим — не более 20 км/ч.',
+        'При передвижении по скользким, мокрым и неровным поверхностям соблюдайте осторожность.',
+        'Соблюдайте личную осторожность при посещении объекта.',
+        'Проверяйте надёжность крепления бортов перед заездом на платформу разгрузки для исключения самопроизвольного падения борта.',
+        'Очистку поднятого кузова от остатков груза производите специальным инструментом с удлинённой ручкой, находясь на разгрузочной площадке. Находиться в кузове или на колесе автомобиля, наносить удары по кузову, а также встряхивать кузов гидросистемой подъёмника для удаления остатков груза запрещается.',
+        'При падении предметов в завальную яму запрещается спускаться за ними во избежание затягивания в продукт.',
+        'Соблюдайте личную осторожность при выходе из кабины, передвижении по территории, растентовке кузова, открытии и закрытии бортов.'
+      ]
+    }
   ];
 
   // ============================================================
@@ -84,13 +117,23 @@
     return masked.slice(0, 9);
   }
 
+  // Фамилия + один или два инициала с точками. Отчество не обязательно:
+  // допускаются варианты "Иванов И." и "Иванов И.И."
+  const NAME_PATTERN = /^[А-ЯЁ][а-яё]+(-[А-ЯЁ][а-яё]+)? [А-ЯЁ]\.([А-ЯЁ]\.)?$/;
+
+  function isValidName(value) {
+    return NAME_PATTERN.test(value.trim());
+  }
+
   // ============================================================
   // ЭЛЕМЕНТЫ
   // ============================================================
+  const nameInput = document.getElementById('nameInput');
   const carInput = document.getElementById('carInput');
   const confirmBtn = document.getElementById('confirmBtn');
   const statusEl = document.getElementById('statusMessage');
   const errorText = document.getElementById('errorText');
+  const nameErrorText = document.getElementById('nameErrorText');
   const ackCheckbox = document.getElementById('ackCheckbox');
   const historyToggle = document.getElementById('historyToggle');
   const historyList = document.getElementById('historyList');
@@ -109,6 +152,14 @@
   function showError() {
     errorText.classList.add('visible');
     carInput.classList.add('invalid');
+  }
+  function hideNameError() {
+    nameErrorText.classList.remove('visible');
+    nameInput.classList.remove('invalid');
+  }
+  function showNameError() {
+    nameErrorText.classList.add('visible');
+    nameInput.classList.add('invalid');
   }
 
   // ============================================================
@@ -137,7 +188,8 @@
     historyList.innerHTML = history.map(record => {
       const date = new Date(record.signedAt);
       const timeStr = date.toLocaleString('ru-RU', { hour12: false });
-      return `<div class="history-item"><span class="car">${record.carNumber}</span><span class="time">${timeStr}</span></div>`;
+      const nameLabel = record.driverName ? `${record.driverName} · ` : '';
+      return `<div class="history-item"><span class="car">${nameLabel}${record.carNumber}</span><span class="time">${timeStr}</span></div>`;
     }).join('');
   }
 
@@ -163,6 +215,20 @@
       showError();
     } else {
       hideError();
+    }
+  });
+
+  nameInput.addEventListener('input', function() {
+    hideNameError();
+    hideStatus();
+  });
+
+  nameInput.addEventListener('blur', function() {
+    const val = this.value.trim();
+    if (val.length > 0 && !isValidName(val)) {
+      showNameError();
+    } else {
+      hideNameError();
     }
   });
 
@@ -211,7 +277,7 @@
     return pdfDoc.embedFont(bytes);
   }
 
-  async function generatePDF(carNumber, signedAtFormatted) {
+  async function generatePDF(driverName, carNumber, signedAtFormatted) {
     try {
       const { PDFDocument, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.create();
@@ -248,18 +314,19 @@
       }
 
       // ---------- Шапка организации ----------
-      drawCentered('АГРОХОЛДИНГ «СТЕПЬ»', 14, fontBold, textColor);
+      drawCentered('ЗЕРНОВОЙ ТЕРМИНАЛ «СТЕПЬ»', 14, fontBold, textColor);
       y -= 20;
 
       // ---------- Заголовок документа ----------
-      drawCentered('СОГЛАШЕНИЕ', 16, fontBold, textColor);
+      drawCentered('ПРАВИЛА ПОСЕЩЕНИЯ', 16, fontBold, textColor);
       y -= 20;
-      drawCentered('по охране труда и промышленной безопасности', 13, font, textColor);
+      drawCentered('Зернового терминала «СТЕПЬ»', 13, font, textColor);
       y -= 28;
 
       // ---------- Реквизиты документа ----------
       const docDate = signedAtFormatted.split(',')[0] || signedAtFormatted;
       drawParagraph(`Дата составления: ${docDate}`, { size: 11, color: mutedColor, lineHeight: 16 });
+      drawParagraph(`Водитель: ${driverName}`, { size: 11, color: mutedColor, lineHeight: 16 });
       drawParagraph(`Государственный регистрационный номер транспортного средства: ${carNumber}`, { size: 11, color: mutedColor, lineHeight: 16 });
       y -= 12;
 
@@ -272,29 +339,26 @@
       y -= 18;
 
       // ---------- Преамбула ----------
-      drawParagraph(
-        'Настоящим подтверждается, что водитель указанного транспортного средства ознакомлен ' +
-        'с требованиями промышленной и пожарной безопасности, действующими на территории ' +
-        'Агрохолдинга «СТЕПЬ», и обязуется их соблюдать в полном объёме.',
-        { size: 12, lineHeight: 17, indent: PARAGRAPH_INDENT }
-      );
+      drawParagraph(INTRO_TEXT, { size: 12, lineHeight: 17, indent: PARAGRAPH_INDENT });
       y -= 8;
 
-      // ---------- Раздел с требованиями ----------
-      drawParagraph('1. Требования промышленной безопасности', { size: 13, useFont: fontBold, lineHeight: 20 });
-      y -= 4;
-
-      RULES.forEach((rule, index) => {
-        drawParagraph(`1.${index + 1}. ${rule}`, { size: 11.5, lineHeight: 16, indent: PARAGRAPH_INDENT });
+      // ---------- Разделы правил ----------
+      SECTIONS.forEach((section, sectionIndex) => {
+        ensureSpace(40);
+        drawParagraph(section.title, { size: 13, useFont: fontBold, lineHeight: 20 });
+        y -= 4;
+        section.items.forEach((item, itemIndex) => {
+          drawParagraph(`${sectionIndex + 1}.${itemIndex + 1}. ${item}`, { size: 11, lineHeight: 15.5, indent: PARAGRAPH_INDENT });
+        });
+        y -= 10;
       });
-      y -= 10;
 
       // ---------- Подтверждение и подпись ----------
       ensureSpace(90);
-      drawParagraph('2. Подтверждение согласия', { size: 13, useFont: fontBold, lineHeight: 20 });
+      drawParagraph(`${SECTIONS.length + 1}. Подтверждение согласия`, { size: 13, useFont: fontBold, lineHeight: 20 });
       y -= 4;
       drawParagraph(
-        'Я ознакомлен(а) с указанными требованиями и обязуюсь их неукоснительно соблюдать.',
+        'Я ознакомлен(а) с указанными правилами посещения Зернового терминала «СТЕПЬ» и обязуюсь их неукоснительно соблюдать.',
         { size: 12, lineHeight: 17, indent: PARAGRAPH_INDENT }
       );
       y -= 14;
@@ -312,7 +376,7 @@
       // ---------- Подвал ----------
       ensureSpace(30);
       y -= 20;
-      drawParagraph('Документ сформирован автоматически в электронной системе Агрохолдинга «СТЕПЬ».', { size: 9, color: mutedColor, lineHeight: 12 });
+      drawParagraph('С заботой о Вас, Зерновой терминал «СТЕПЬ». Документ сформирован автоматически.', { size: 9, color: mutedColor, lineHeight: 12 });
 
       const pdfBytes = await pdfDoc.save();
       return new Blob([pdfBytes], { type: 'application/pdf' });
@@ -326,14 +390,14 @@
   // ============================================================
   // ОТПРАВКА В TELEGRAM
   // ============================================================
-  function sendPDFToTelegram(pdfBlob, carNumber, signedAt) {
+  function sendPDFToTelegram(pdfBlob, driverName, carNumber, signedAt) {
     const dateForName = new Date().toISOString().slice(0, 10);
     const formData = new FormData();
     formData.append('chat_id', TELEGRAM_CHAT_ID);
-    // Номер ТС и дата — в имени файла и подписи, чтобы находить через поиск Telegram
+    // Номер ТС, ФИО и дата — в имени файла и подписи, чтобы находить через поиск Telegram
     // (по тексту) и через «Перейти к дате» в поиске чата (по календарю).
     formData.append('document', pdfBlob, `ТБ_${carNumber}_${dateForName}.pdf`);
-    formData.append('caption', `✅ Подписание ТБ\nНомер ТС: ${carNumber}\nДата: ${dateForName}\nВремя: ${signedAt}`);
+    formData.append('caption', `✅ Подписание правил посещения терминала\nВодитель: ${driverName}\nНомер ТС: ${carNumber}\nДата: ${dateForName}\nВремя: ${signedAt}`);
 
     fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
       method: 'POST',
@@ -358,9 +422,23 @@
   async function handleConfirm() {
     hideStatus();
     hideError();
+    hideNameError();
 
     if (!ackCheckbox.checked) {
       showStatus('⚠️ Отметьте, что согласны с условиями соглашения', 'error');
+      return;
+    }
+
+    const driverName = nameInput.value.trim();
+    if (driverName === '') {
+      showStatus('⚠️ Введите фамилию и инициалы', 'error');
+      nameInput.focus();
+      return;
+    }
+    if (!isValidName(driverName)) {
+      showNameError();
+      showStatus('⚠️ Укажите фамилию и инициалы в формате «Иванов И.» или «Иванов И.И.»', 'error');
+      nameInput.focus();
       return;
     }
 
@@ -397,9 +475,10 @@
       const timeStr = now.toLocaleString('ru-RU', { hour12: false });
       const record = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        driverName: driverName,
         carNumber: car,
         signedAt: now.toISOString(),
-        version: '1.0'
+        version: '2.0'
       };
       const history = getHistory();
       history.push(record);
@@ -407,19 +486,19 @@
       if (!historyList.hidden) renderHistory();
       historyCount.textContent = `(${history.length})`;
 
-      showStatus(`✅ Согласие подтверждено для ${car} в ${timeStr}`, 'success');
+      showStatus(`✅ Согласие подтверждено для ${driverName} (${car}) в ${timeStr}`, 'success');
 
-      const pdfBlob = await generatePDF(car, timeStr);
+      const pdfBlob = await generatePDF(driverName, car, timeStr);
       if (!pdfBlob) return;
 
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
-      link.download = `Соглашение_ТБ_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
+      link.download = `Правила_посещения_${car}_${new Date().toISOString().slice(0,10)}.pdf`;
       link.click();
       URL.revokeObjectURL(link.href);
 
       if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-        sendPDFToTelegram(pdfBlob, car, timeStr);
+        sendPDFToTelegram(pdfBlob, driverName, car, timeStr);
       }
     } finally {
       confirmBtn.disabled = !ackCheckbox.checked;

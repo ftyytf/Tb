@@ -95,6 +95,11 @@ body {
   padding-bottom: 10px;
   border-bottom: 1px solid #e2e8e0;
 }
+.agreement-box .doc-intro {
+  font-size: 13px;
+  color: #3a4a42;
+  margin-bottom: 14px;
+}
 .agreement-box h3 {
   font-size: 15px;
   margin-top: 10px;
@@ -142,6 +147,11 @@ body {
 .field input:focus {
   border-color: #2d6a4f;
   box-shadow: 0 0 0 4px rgba(45,106,79,0.12);
+}
+.field input.text-input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 18px;
 }
 .field input.invalid {
   border-color: #b91c1c;
