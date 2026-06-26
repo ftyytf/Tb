@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  const { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID } = window.APP_CONFIG;
+  const { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, YANDEX_DISK_TOKEN } = window.APP_CONFIG;
 
   // ============================================================
   // ДОПУСТИМЫЕ СИМВОЛЫ И КОДЫ РЕГИОНОВ
@@ -429,6 +429,45 @@
   }
 
   // ============================================================
+  // ЗАГРУЗКА НА ЯНДЕКС.ДИСК
+  // ============================================================
+  async function uploadToYandexDisk(pdfBlob, carNumber, signedAt) {
+    if (!YANDEX_DISK_TOKEN) return;
+
+    const dateForName = new Date().toISOString().slice(0, 10);
+    // "app:/" — корень папки приложения (доступ ограничен только ей, scope disk.app_folder)
+    const path = `app:/ТБ_${carNumber}_${dateForName}_${Date.now()}.pdf`;
+    const authHeader = `OAuth ${YANDEX_DISK_TOKEN}`;
+
+    try {
+      // Шаг 1: получить временную ссылку для загрузки
+      const linkResponse = await fetch(
+        `https://cloud-api.yandex.net/v1/disk/resources/upload?path=${encodeURIComponent(path)}&overwrite=true`,
+        { headers: { Authorization: authHeader } }
+      );
+      const linkData = await linkResponse.json();
+      if (!linkResponse.ok || !linkData.href) {
+        console.error('Ошибка получения ссылки для загрузки на Яндекс.Диск:', linkData);
+        return;
+      }
+
+      // Шаг 2: загрузить сам файл по полученной ссылке
+      const uploadResponse = await fetch(linkData.href, {
+        method: linkData.method || 'PUT',
+        body: pdfBlob
+      });
+
+      if (uploadResponse.ok) {
+        console.log('PDF загружен на Яндекс.Диск');
+      } else {
+        console.error('Ошибка загрузки файла на Яндекс.Диск:', uploadResponse.status);
+      }
+    } catch (err) {
+      console.error('Ошибка соединения с Яндекс.Диском:', err);
+    }
+  }
+
+  // ============================================================
   // ОБРАБОТЧИК ПОДТВЕРЖДЕНИЯ
   // ============================================================
   async function handleConfirm() {
@@ -503,11 +542,14 @@
       const pdfBlob = await generatePDF(driverName, car, timeStr);
       if (!pdfBlob) return;
 
-      // Сначала отправляем в Telegram и ждём завершения: на iOS Safari клик по
-      // ссылке-скачиванию blob: иногда открывает PDF в той же вкладке вместо
-      // скачивания, что прерывает ещё не завершённый запрос к Telegram.
+      // Сначала отправляем в Telegram/на Яндекс.Диск и ждём завершения: на iOS Safari клик
+      // по ссылке-скачиванию blob: иногда открывает PDF в той же вкладке вместо скачивания,
+      // что прерывает ещё не завершённые запросы.
       if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
         await sendPDFToTelegram(pdfBlob, driverName, car, timeStr);
+      }
+      if (YANDEX_DISK_TOKEN) {
+        await uploadToYandexDisk(pdfBlob, car, timeStr);
       }
 
       const link = document.createElement('a');
