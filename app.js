@@ -11,18 +11,106 @@
   const ALLOWED_CHARS = ALLOWED_LETTERS.concat(DIGITS);
 
   const REGION_CODES = new Set([
-    '01','101','02','102','702','03','103','04','05','105','06','07','08','09','109',
-    '10','11','111','12','13','113','14','15','16','116','716','17','18','118','19',
-    '21','121','82','182','95','22','222','23','93','123','193','323','24','88','124',
-    '224','25','125','725','26','126','27','41','59','159','75','28','29','30','130',
-    '31','32','33','34','134','35','36','136','37','38','138','39','139','40','42',
-    '142','43','44','45','46','47','147','48','49','50','90','150','190','250','550',
-    '750','790','51','52','152','252','53','54','154','55','155','56','156','57','58',
-    '158','60','61','161','761','62','63','163','763','64','164','65','66','96','196',
-    '166','67','68','69','169','70','71','72','172','73','173','74','174','774','76',
-    '77','97','99','177','197','199','777','797','799','977','78','98','178','198',
-    '778','92','192','79','83','86','186','87','89','80','180','81','181','84','184',
-    '85','185','94'
+    // Республики
+    '01','101',                          // Адыгея
+    '02','102','702',                    // Башкортостан
+    '03','103',                          // Бурятия
+    '04',                                // Алтай
+    '05','105',                          // Дагестан
+    '06',                                // Ингушетия
+    '07',                                // Кабардино-Балкария
+    '08',                                // Калмыкия
+    '09','109',                          // Карачаево-Черкесия
+    '10',                                // Карелия
+    '11','111',                          // Коми
+    '12',                                // Марий Эл
+    '13','113',                          // Мордовия
+    '14',                                // Саха (Якутия)
+    '15',                                // Северная Осетия — Алания
+    '16','116','716',                    // Татарстан
+    '17',                                // Тыва
+    '18','118',                          // Удмуртия
+    '19',                                // Хакасия
+    '20','95',                           // Чеченская Республика
+    '21','121',                          // Чувашия
+    // Края
+    '22','222',                          // Алтайский
+    '23','93','123','193','323',         // Краснодарский
+    '24','88','124','224',              // Красноярский
+    '25','125','725',                    // Приморский
+    '26','126',                          // Ставропольский
+    '27','127',                          // Хабаровский
+    '28',                                // Амурская область
+    // Области
+    '29',                                // Архангельская
+    '30','130',                          // Астраханская
+    '31',                                // Белгородская
+    '32',                                // Брянская
+    '33',                                // Владимирская
+    '34','134',                          // Волгоградская
+    '35',                                // Вологодская
+    '36','136',                          // Воронежская
+    '37',                                // Ивановская
+    '38','138',                          // Иркутская
+    '39','139',                          // Калининградская
+    '40',                                // Калужская
+    '41',                                // Камчатский край
+    '42','142',                          // Кемеровская
+    '43',                                // Кировская
+    '44',                                // Костромская
+    '45',                                // Курганская
+    '46',                                // Курская
+    '47','147',                          // Ленинградская
+    '48',                                // Липецкая
+    '49',                                // Магаданская
+    '50','90','150','190','250','550','750','790', // Московская
+    '51',                                // Мурманская
+    '52','152','252',                    // Нижегородская
+    '53',                                // Новгородская
+    '54','154',                          // Новосибирская
+    '55','155',                          // Омская
+    '56','156',                          // Оренбургская
+    '57',                                // Орловская
+    '58','158',                          // Пензенская
+    '59','159',                          // Пермский край
+    '60',                                // Псковская
+    '61','161','761',                    // Ростовская
+    '62',                                // Рязанская
+    '63','163','763',                    // Самарская
+    '64','164',                          // Саратовская
+    '65',                                // Сахалинская
+    '66','96','166','196',              // Свердловская
+    '67',                                // Смоленская
+    '68',                                // Тамбовская
+    '69','169',                          // Тверская
+    '70',                                // Томская
+    '71',                                // Тульская
+    '72','172',                          // Тюменская
+    '73','173',                          // Ульяновская
+    '74','174','774',                    // Челябинская
+    '75',                                // Забайкальский край
+    '76',                                // Ярославская
+    // Города федерального значения
+    '77','97','99','177','197','199','777','797','799','977', // Москва
+    '78','98','178','198','778',         // Санкт-Петербург
+    // Автономные округа и области
+    '79',                                // Еврейская АО
+    '80','180',                          // (бывш. Читинская обл., ныне Забайкальский край)
+    '81','181',                          // (бывш. Коми-Пермяцкий АО)
+    '82','182',                          // Республика Крым
+    '83',                                // Ненецкий АО
+    '84','184',                          // (бывш. Таймырский АО)
+    '85','185',                          // (бывш. Усть-Ордынский Бурятский АО)
+    '86','186',                          // Ханты-Мансийский АО — Югра
+    '87',                                // Чукотский АО
+    '89',                                // Ямало-Ненецкий АО
+    '92','192',                          // Севастополь
+    '94',                                // Байконур
+    // Новые субъекты РФ (с 2022 г.)
+    '480',                               // Запорожская область
+    '481',                               // Херсонская область
+    '482',                               // Донецкая Народная Республика
+    '483',                               // Луганская Народная Республика
   ]);
 
   const INTRO_TEXT =
@@ -86,14 +174,14 @@
   }
 
   function getRegionCode(value) {
-    if (value.length === 7) return value.substring(5, 7);
-    if (value.length === 8) return value.substring(5, 8);
-    if (value.length === 9) return value.substring(6, 9);
+    // Body is always 6 chars (L+DDD+LL), region follows: 2 or 3 digits
+    if (value.length === 8) return value.substring(6, 8);  // 2-digit region
+    if (value.length === 9) return value.substring(6, 9);  // 3-digit region
     return '';
   }
 
   function isValidFull(value) {
-    if (value.length < 7 || value.length > 9) return false;
+    if (value.length !== 8 && value.length !== 9) return false;
     for (let i = 0; i < value.length; i++) {
       if (!isAllowedChar(value[i], i)) return false;
     }
@@ -117,10 +205,12 @@
     return masked.slice(0, 9);
   }
 
-  // Фамилия + один или два инициала. Точки и отчество не обязательны:
-  // допускаются варианты "Иванов И", "Иванов И.", "Иванов ИИ", "Иванов И.И."
-  const NAME_PATTERN = /^[А-ЯЁ][а-яё]+(-[А-ЯЁ][а-яё]+)? [А-ЯЁ]\.?([А-ЯЁ]\.?)?$/;
-  const NAME_ALLOWED_CHARS = /[А-ЯЁа-яё .-]/;
+  // Принимает как инициалы «ИВАНОВ И.И.», так и полное ФИО «ИВАНОВ ИВАН ИВАНОВИЧ».
+  // Всё в верхнем регистре (фильтр ниже автоматически делает toUpperCase).
+  // Фамилия: 2+ букв, необязательный дефис (двойная фамилия).
+  // Имя: полное слово (2+ букв) с необязательным отчеством, ИЛИ инициал(ы) с точкой.
+  const NAME_PATTERN = /^[А-ЯЁ]{2,}(-[А-ЯЁ]{2,})? ([А-ЯЁ]{2,}( [А-ЯЁ]+\.?)?|[А-ЯЁ]\.?([А-ЯЁ]\.?)?)$/;
+  const NAME_ALLOWED_CHARS = /[А-ЯЁ .\-]/;
 
   function isValidName(value) {
     return NAME_PATTERN.test(value.trim());
@@ -128,10 +218,9 @@
 
   function filterNameInput(rawValue) {
     let filtered = '';
-    for (const ch of rawValue) {
+    for (const ch of rawValue.toUpperCase()) {
       if (NAME_ALLOWED_CHARS.test(ch)) filtered += ch;
     }
-    // Не более двух точек подряд (фамилия + два инициала)
     return filtered.replace(/\.{2,}/g, '.').replace(/ {2,}/g, ' ');
   }
 
@@ -140,6 +229,7 @@
   // ============================================================
   const nameInput = document.getElementById('nameInput');
   const carInput = document.getElementById('carInput');
+  const plateSepLine = document.getElementById('plateSepLine');
   const confirmBtn = document.getElementById('confirmBtn');
   const statusEl = document.getElementById('statusMessage');
   const errorText = document.getElementById('errorText');
@@ -148,6 +238,29 @@
   const historyToggle = document.getElementById('historyToggle');
   const historyList = document.getElementById('historyList');
   const historyCount = document.getElementById('historyCount');
+
+  // Вертикальная черта-разделитель между телом номера (6 символов) и кодом региона.
+  // Позиционируем через Canvas API для точного измерения ширины шрифта.
+  const _sepCanvas = document.createElement('canvas');
+  const _sepCtx = _sepCanvas.getContext('2d');
+
+  function updatePlateSep() {
+    if (!plateSepLine) return;
+    const val = carInput.value;
+    if (val.length < 6) {
+      plateSepLine.style.display = 'none';
+      return;
+    }
+    const style = window.getComputedStyle(carInput);
+    _sepCtx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+    const bodyWidth = _sepCtx.measureText(val.slice(0, 6)).width;
+    const paddingLeft = parseFloat(style.paddingLeft) || 18;
+    const letterSpacing = parseFloat(style.letterSpacing) || 2;
+    // letter-spacing добавляется к каждому символу
+    const sepLeft = Math.round(paddingLeft + bodyWidth + 6 * letterSpacing);
+    plateSepLine.style.left = sepLeft + 'px';
+    plateSepLine.style.display = 'block';
+  }
 
   function showStatus(text, type) {
     statusEl.textContent = text;
@@ -217,6 +330,7 @@
     this.value = maskInput(this.value);
     hideError();
     hideStatus();
+    updatePlateSep();
   });
 
   carInput.addEventListener('blur', function() {
@@ -247,7 +361,29 @@
   // ГЕНЕРАЦИЯ PDF С ПОДДЕРЖКОЙ КИРИЛЛИЦЫ (pdf-lib)
   // ============================================================
   // Поля документа по ГОСТ Р 7.0.97-2016: левое/верхнее/нижнее – не менее 20 мм, правое – не менее 10 мм.
+  // Шрифты кэшируются в памяти: при повторной генерации не скачиваются заново.
   // ============================================================
+  let _fontBytesCache = null;
+  let _fontBoldBytesCache = null;
+
+  async function _loadFontBytesWithRetry(url, retries) {
+    retries = retries || 2;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const tid = setTimeout(function() { controller.abort(); }, 20000);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.arrayBuffer();
+      } catch (err) {
+        clearTimeout(tid);
+        if (attempt === retries) throw err;
+        await new Promise(function(r) { setTimeout(r, 1500 * (attempt + 1)); });
+      } finally {
+        clearTimeout(tid);
+      }
+    }
+  }
   const PAGE_SIZE = [595.28, 841.89]; // A4 в пунктах
   const MM = 2.8346; // 1 мм в пунктах
   const MARGIN_LEFT = 20 * MM;
@@ -283,13 +419,6 @@
     return lines;
   }
 
-  async function loadFont(pdfDoc, url) {
-    const bytes = await fetch(url).then(res => res.arrayBuffer());
-    // subset: true — встраивает только реально используемые символы шрифта,
-    // а не весь файл шрифта (~750 КБ), что резко уменьшает размер PDF.
-    return pdfDoc.embedFont(bytes, { subset: true });
-  }
-
   async function generatePDF(driverName, carNumber, signedAtFormatted) {
     try {
       const { PDFDocument, rgb } = PDFLib;
@@ -297,8 +426,12 @@
       pdfDoc.registerFontkit(fontkit);
 
       const baseUrl = 'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/';
-      const font = await loadFont(pdfDoc, baseUrl + 'DejaVuSans.ttf');
-      const fontBold = await loadFont(pdfDoc, baseUrl + 'DejaVuSans-Bold.ttf');
+      // Загружаем шрифты один раз — при повторных нажатиях используем кэш
+      if (!_fontBytesCache) _fontBytesCache = await _loadFontBytesWithRetry(baseUrl + 'DejaVuSans.ttf');
+      if (!_fontBoldBytesCache) _fontBoldBytesCache = await _loadFontBytesWithRetry(baseUrl + 'DejaVuSans-Bold.ttf');
+      // embedFont нужен новый экземпляр для каждого PDFDocument, но байты шрифта переиспользуем
+      const font = await pdfDoc.embedFont(_fontBytesCache, { subset: true });
+      const fontBold = await pdfDoc.embedFont(_fontBoldBytesCache, { subset: true });
 
       const textColor = rgb(0.1, 0.1, 0.1);
       const mutedColor = rgb(0.4, 0.4, 0.4);
@@ -482,13 +615,13 @@
 
     const driverName = nameInput.value.trim();
     if (driverName === '') {
-      showStatus('⚠️ Введите фамилию и инициалы', 'error');
+      showStatus('⚠️ Введите ФИО водителя', 'error');
       nameInput.focus();
       return;
     }
     if (!isValidName(driverName)) {
       showNameError();
-      showStatus('⚠️ Укажите фамилию и инициалы в формате «Иванов И.» или «Иванов И.И.»', 'error');
+      showStatus('⚠️ Укажите ФИО в формате «ИВАНОВ И.» или «ИВАНОВ ИВАН ИВАНОВИЧ»', 'error');
       nameInput.focus();
       return;
     }

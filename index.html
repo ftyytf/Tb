@@ -8,6 +8,11 @@
 
   <link rel="stylesheet" href="styles.css" />
 
+  <!-- Предзагрузка шрифтов улучшает надёжность на мобильных устройствах -->
+  <link rel="preload" as="font" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf" />
+  <link rel="preload" as="font" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf" />
   <!-- Библиотека pdf-lib для создания PDF с поддержкой кириллицы -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <!-- fontkit нужен pdf-lib для встраивания кастомных (не стандартных 14) шрифтов -->
@@ -82,18 +87,21 @@
   </label>
 
   <div class="field">
-    <label for="nameInput">Фамилия и инициалы</label>
-    <input type="text" id="nameInput" class="text-input" placeholder="Иванов И.И." autocomplete="off" maxlength="40" />
+    <label for="nameInput">ФИО водителя</label>
+    <input type="text" id="nameInput" class="text-input" placeholder="ИВАНОВ ИВАН ИВАНОВИЧ" autocomplete="off" maxlength="60" />
     <div class="hint">
-      <span>📌</span> Формат: <strong>Фамилия И.</strong> или <strong>Фамилия И.И.</strong>
-      <span>👤</span> отчество указывать необязательно
+      <span>📌</span> Полностью: <strong>ИВАНОВ ИВАН ИВАНОВИЧ</strong>
+      <span>👤</span> или инициалы: <strong>ИВАНОВ И.И.</strong> — отчество необязательно
     </div>
-    <div class="error-text" id="nameErrorText">Укажите фамилию и инициалы, например «Иванов И.» или «Иванов И.И.».</div>
+    <div class="error-text" id="nameErrorText">Укажите ФИО, например «ИВАНОВ И.» или «ИВАНОВ ИВАН ИВАНОВИЧ».</div>
   </div>
 
   <div class="field">
     <label for="carInput">Государственный номер ТС</label>
+    <div class="car-input-wrap">
     <input type="text" id="carInput" placeholder="А777АА77" autocomplete="off" maxlength="9" />
+    <span class="plate-sep-line" id="plateSepLine"></span>
+    </div>
     <div class="hint">
       <span>📌</span> Формат: <strong>Б ЦЦЦ ББ РР</strong>
       <span style="color:#b91c1c;">🚫</span> <strong style="background:#f8dddd; color:#721c24;">000</strong> запрещён

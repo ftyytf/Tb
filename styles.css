@@ -149,9 +149,22 @@ body {
   box-shadow: 0 0 0 4px rgba(45,106,79,0.12);
 }
 .field input.text-input {
-  text-transform: none;
+  text-transform: uppercase;
   letter-spacing: normal;
   font-size: 18px;
+}
+.car-input-wrap {
+  position: relative;
+}
+.plate-sep-line {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: rgba(45, 106, 79, 0.35);
+  border-radius: 1px;
+  pointer-events: none;
+  display: none;
 }
 .field input.invalid {
   border-color: #b91c1c;
