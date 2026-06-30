@@ -234,11 +234,10 @@
   const errorText = document.getElementById('errorText');
   const nameErrorText = document.getElementById('nameErrorText');
   const ackCheckbox = document.getElementById('ackCheckbox');
-  const pdCheckbox = document.getElementById('pdCheckbox');
   const historyToggle = document.getElementById('historyToggle');
   const historyList = document.getElementById('historyList');
   const historyCount = document.getElementById('historyCount');
-  const privacyDialog = document.getElementById('privacyDialog');
+  const privacyOverlay = document.getElementById('privacyOverlay');
 
   function showStatus(text, type) {
     statusEl.textContent = text;
@@ -264,34 +263,37 @@
   }
 
   // ============================================================
-  // ЧЕКБОКСЫ — оба обязательны для разблокировки кнопки
+  // ЧЕКБОКС СОГЛАСИЯ — блокирует кнопку
   // ============================================================
-  function updateConfirmBtn() {
-    confirmBtn.disabled = !(ackCheckbox.checked && pdCheckbox.checked);
-  }
-  ackCheckbox.addEventListener('change', updateConfirmBtn);
-  pdCheckbox.addEventListener('change', updateConfirmBtn);
+  ackCheckbox.addEventListener('change', function() {
+    confirmBtn.disabled = !this.checked;
+  });
 
   // ============================================================
-  // ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ — модальное окно
+  // ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ — div-оверлей (работает везде)
   // ============================================================
   function openPrivacy(e) {
-    if (e) e.preventDefault();
-    if (privacyDialog && privacyDialog.showModal) privacyDialog.showModal();
+    e.preventDefault();
+    e.stopPropagation();
+    if (privacyOverlay) privacyOverlay.hidden = false;
   }
   function closePrivacy() {
-    if (privacyDialog) privacyDialog.close();
+    if (privacyOverlay) privacyOverlay.hidden = true;
   }
   document.getElementById('openPrivacy').addEventListener('click', openPrivacy);
   document.getElementById('openPrivacy2').addEventListener('click', openPrivacy);
   document.getElementById('closePrivacy').addEventListener('click', closePrivacy);
   document.getElementById('closePrivacy2').addEventListener('click', closePrivacy);
   // Закрытие по клику на затемнённый фон
-  if (privacyDialog) {
-    privacyDialog.addEventListener('click', function(e) {
-      if (e.target === privacyDialog) closePrivacy();
+  if (privacyOverlay) {
+    privacyOverlay.addEventListener('click', function(e) {
+      if (e.target === privacyOverlay) closePrivacy();
     });
   }
+  // Закрытие по Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePrivacy();
+  });
 
   // ============================================================
   // ИСТОРИЯ ПОДПИСАНИЙ
@@ -609,11 +611,7 @@
     hideNameError();
 
     if (!ackCheckbox.checked) {
-      showStatus('⚠️ Отметьте, что ознакомлены с Правилами посещения', 'error');
-      return;
-    }
-    if (!pdCheckbox.checked) {
-      showStatus('⚠️ Необходимо дать согласие на обработку персональных данных', 'error');
+      showStatus('⚠️ Отметьте согласие с Правилами и Политикой конфиденциальности', 'error');
       return;
     }
 
@@ -695,7 +693,7 @@
       link.click();
       URL.revokeObjectURL(link.href);
     } finally {
-      updateConfirmBtn();
+      confirmBtn.disabled = !ackCheckbox.checked;
       confirmBtn.textContent = originalLabel;
     }
   }
