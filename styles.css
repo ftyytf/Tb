@@ -156,15 +156,17 @@ body {
 .car-input-wrap {
   position: relative;
 }
-.plate-sep-line {
+/* Разделитель между телом номера (6 символов) и кодом региона */
+.car-input-wrap::after {
+  content: '';
   position: absolute;
   top: 10px;
   bottom: 10px;
+  left: 114px;
   width: 2px;
   background: rgba(45, 106, 79, 0.45);
   border-radius: 2px;
   pointer-events: none;
-  display: none;
 }
 .field input.invalid {
   border-color: #b91c1c;
@@ -324,6 +326,8 @@ body {
   .btn { font-size: 16px; padding: 16px; }
   .status { font-size: 14px; padding: 10px; }
   .footer { font-size: 10px; }
+  /* 20px шрифт, padding-left 16px → ~104px */
+  .car-input-wrap::after { left: 104px; }
 }
 @media (max-width: 380px) {
   .container { padding: 14px 10px; }
@@ -331,8 +335,12 @@ body {
   .header-title { font-size: 12px; }
   .field input { font-size: 18px; padding: 12px 14px; }
   .btn { font-size: 15px; padding: 14px; }
+  /* 18px шрифт, padding-left 14px → ~93px */
+  .car-input-wrap::after { left: 93px; }
 }
 @media (pointer: coarse) {
   .btn { padding: 18px; }
   .field input { padding: 18px 18px; }
+  /* touch: padding-left становится 18px → +2px к базовому */
+  .car-input-wrap::after { left: 116px; }
 }

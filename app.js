@@ -229,7 +229,6 @@
   // ============================================================
   const nameInput = document.getElementById('nameInput');
   const carInput = document.getElementById('carInput');
-  const plateSepLine = document.getElementById('plateSepLine');
   const confirmBtn = document.getElementById('confirmBtn');
   const statusEl = document.getElementById('statusMessage');
   const errorText = document.getElementById('errorText');
@@ -238,30 +237,6 @@
   const historyToggle = document.getElementById('historyToggle');
   const historyList = document.getElementById('historyList');
   const historyCount = document.getElementById('historyCount');
-
-  // Вертикальная черта-разделитель между телом номера (6 символов) и кодом региона.
-  // Видна всегда; позиционируется по 6 символам через Canvas.measureText.
-  const _sepCanvas = document.createElement('canvas');
-  const _sepCtx = _sepCanvas.getContext('2d');
-
-  function updatePlateSep() {
-    if (!plateSepLine) return;
-    const style = window.getComputedStyle(carInput);
-    const paddingLeft = parseFloat(style.paddingLeft) || 18;
-    const letterSpacing = parseFloat(style.letterSpacing) || 2;
-    // Используем введённое значение или шаблон заполнителя
-    const val = carInput.value;
-    const bodyText = val.length >= 6 ? val.slice(0, 6) : 'А777АА';
-    try {
-      // style.font — надёжная сводная строка CSS-шрифта, пригодная для Canvas
-      _sepCtx.font = style.font || (style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily);
-      const bodyWidth = _sepCtx.measureText(bodyText).width;
-      plateSepLine.style.left = Math.round(paddingLeft + bodyWidth + 6 * letterSpacing) + 'px';
-    } catch (e) {
-      plateSepLine.style.left = '116px'; // запасное положение
-    }
-    plateSepLine.style.display = 'block';
-  }
 
   function showStatus(text, type) {
     statusEl.textContent = text;
@@ -331,7 +306,6 @@
     this.value = maskInput(this.value);
     hideError();
     hideStatus();
-    updatePlateSep();
   });
 
   carInput.addEventListener('blur', function() {
@@ -730,7 +704,6 @@
   // ============================================================
   autoFillFromUrl();
   historyCount.textContent = `(${getHistory().length})`;
-  updatePlateSep(); // показать разделитель сразу при загрузке
   if (!carInput.value) carInput.focus();
 
   console.log('Форма подписания ТБ (СТЕПЬ) с PDF (pdf-lib) и Telegram загружена.');

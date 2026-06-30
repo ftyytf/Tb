@@ -8,11 +8,6 @@
 
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Предзагрузка шрифтов улучшает надёжность на мобильных устройствах -->
-  <link rel="preload" as="font" crossorigin="anonymous"
-        href="https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf" />
-  <link rel="preload" as="font" crossorigin="anonymous"
-        href="https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf" />
   <!-- Библиотека pdf-lib для создания PDF с поддержкой кириллицы -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <!-- fontkit нужен pdf-lib для встраивания кастомных (не стандартных 14) шрифтов -->
@@ -99,8 +94,7 @@
   <div class="field">
     <label for="carInput">Государственный номер ТС</label>
     <div class="car-input-wrap">
-    <input type="text" id="carInput" placeholder="А777АА77" autocomplete="off" maxlength="9" />
-    <span class="plate-sep-line" id="plateSepLine"></span>
+      <input type="text" id="carInput" placeholder="А777АА77" autocomplete="off" maxlength="9" />
     </div>
     <div class="hint">
       <span>📌</span> Формат: <strong>Б ЦЦЦ ББ РР</strong>
