@@ -240,25 +240,26 @@
   const historyCount = document.getElementById('historyCount');
 
   // Вертикальная черта-разделитель между телом номера (6 символов) и кодом региона.
-  // Позиционируем через Canvas API для точного измерения ширины шрифта.
+  // Видна всегда; позиционируется по 6 символам через Canvas.measureText.
   const _sepCanvas = document.createElement('canvas');
   const _sepCtx = _sepCanvas.getContext('2d');
 
   function updatePlateSep() {
     if (!plateSepLine) return;
-    const val = carInput.value;
-    if (val.length < 6) {
-      plateSepLine.style.display = 'none';
-      return;
-    }
     const style = window.getComputedStyle(carInput);
-    _sepCtx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
-    const bodyWidth = _sepCtx.measureText(val.slice(0, 6)).width;
     const paddingLeft = parseFloat(style.paddingLeft) || 18;
     const letterSpacing = parseFloat(style.letterSpacing) || 2;
-    // letter-spacing добавляется к каждому символу
-    const sepLeft = Math.round(paddingLeft + bodyWidth + 6 * letterSpacing);
-    plateSepLine.style.left = sepLeft + 'px';
+    // Используем введённое значение или шаблон заполнителя
+    const val = carInput.value;
+    const bodyText = val.length >= 6 ? val.slice(0, 6) : 'А777АА';
+    try {
+      // style.font — надёжная сводная строка CSS-шрифта, пригодная для Canvas
+      _sepCtx.font = style.font || (style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily);
+      const bodyWidth = _sepCtx.measureText(bodyText).width;
+      plateSepLine.style.left = Math.round(paddingLeft + bodyWidth + 6 * letterSpacing) + 'px';
+    } catch (e) {
+      plateSepLine.style.left = '116px'; // запасное положение
+    }
     plateSepLine.style.display = 'block';
   }
 
@@ -729,6 +730,7 @@
   // ============================================================
   autoFillFromUrl();
   historyCount.textContent = `(${getHistory().length})`;
+  updatePlateSep(); // показать разделитель сразу при загрузке
   if (!carInput.value) carInput.focus();
 
   console.log('Форма подписания ТБ (СТЕПЬ) с PDF (pdf-lib) и Telegram загружена.');

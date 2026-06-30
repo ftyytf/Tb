@@ -158,11 +158,11 @@ body {
 }
 .plate-sep-line {
   position: absolute;
-  top: 14px;
-  bottom: 14px;
+  top: 10px;
+  bottom: 10px;
   width: 2px;
-  background: rgba(45, 106, 79, 0.35);
-  border-radius: 1px;
+  background: rgba(45, 106, 79, 0.45);
+  border-radius: 2px;
   pointer-events: none;
   display: none;
 }
